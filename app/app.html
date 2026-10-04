@@ -159,7 +159,7 @@ main{padding:16px 22px 60px;min-width:0}
 .btn:hover{border-color:var(--accent)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
 .btn[disabled]{opacity:.5;cursor:default}
-#impBtn{margin-left:auto}
+#statBtn{margin-left:auto}
 .imp{width:min(620px,100%);background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:24px;margin:auto;animation:pop .2s ease-out}
 .imp h2{margin:0 0 6px;font-size:21px}
 .imp p{color:var(--muted);margin:0 0 16px;font-size:14px}
@@ -398,6 +398,97 @@ details.orig .desc{margin-top:8px}
   .ai-dlg{padding:18px 14px calc(18px + env(safe-area-inset-bottom))}
   .radios{grid-template-columns:1fr 1fr}
 }
+
+/* ---------- Statistik */
+.btn.on{border-color:var(--accent);background:rgba(124,92,255,.16)}
+#stats{cursor:pointer}
+.stv{max-width:1500px;margin:0 auto;padding:18px 22px 60px}
+.st-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.st-head h1{margin:0;font-size:24px;letter-spacing:-.3px}
+.st-head .muted{flex:1;min-width:160px}
+.st-kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:12px;margin-bottom:16px}
+.st-kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:13px 16px}
+.st-kpi small{display:block;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.st-kpi b{display:block;font-size:26px;font-weight:750;letter-spacing:-.5px;margin:2px 0 1px;font-variant-numeric:tabular-nums}
+.st-kpi span{color:var(--muted);font-size:12.5px}
+.st-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px;align-items:start}
+.st-card{grid-column:span 6;background:var(--bg2);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;min-width:0}
+.st-card.w12{grid-column:1/-1}.st-card.w8{grid-column:span 8}.st-card.w4{grid-column:span 4}
+.st-ch{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.st-ch h3{margin:0;font-size:15.5px}
+.st-ch p{margin:2px 0 0;color:var(--dim);font-size:12.5px}
+.st-ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.st-card .seg button{padding:5px 10px;font-size:12.5px}
+.st-card .sel{padding:6px 10px;font-size:13px}
+.st-none{color:var(--dim);font-size:13.5px;padding:10px 0}
+/* horizontale Balken */
+.hb{display:grid;gap:4px}
+.hb-row{display:grid;grid-template-columns:minmax(90px,34%) 1fr auto;align-items:center;gap:10px;font-size:13.5px;padding:3px 4px;border-radius:7px}
+.hb-row[data-fk]{cursor:pointer}.hb-row[data-fk]:hover{background:var(--panel)}
+.hb-l{color:var(--muted);overflow:hidden;white-space:nowrap;display:flex;align-items:center;gap:8px;min-width:0}
+.hb-l span{overflow:hidden;text-overflow:ellipsis}
+.hb-l .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.hb-t{height:12px}
+.hb-t i{display:block;height:100%;min-width:2px;border-radius:0 4px 4px 0;background:var(--accent)}
+.hb-v{font-size:12.5px;color:var(--text);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.hb-v small{color:var(--dim);margin-left:6px;font-size:12px}
+/* Säulen */
+.cols{position:relative;display:flex;align-items:flex-end;gap:2px;height:180px;margin-top:22px;border-bottom:1px solid #3a4258}
+.cols-g{position:absolute;left:0;right:0;border-top:1px dashed var(--line);pointer-events:none}
+.cols-g span{position:absolute;left:0;top:-16px;font-size:10.5px;color:var(--dim);background:var(--bg2);padding-right:4px}
+.col{flex:1;height:100%;display:flex;align-items:flex-end;min-width:0}
+.col i{display:block;width:100%;background:var(--accent);border-radius:4px 4px 0 0}
+.col:hover i{background:var(--accent2)}
+.cols-x{display:flex;gap:2px;font-size:11px;color:var(--dim);margin-top:5px;height:15px}
+.cols-x span{flex:1;min-width:0;white-space:nowrap;display:flex;justify-content:center}
+/* gestapelter Balken + Legende */
+.stack{display:flex;height:22px;gap:2px;border-radius:6px;overflow:hidden;margin:4px 0 14px}
+.stack i{display:block;height:100%;min-width:3px}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:2px 14px;font-size:13.5px}
+.legend div{display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:7px;cursor:pointer;color:var(--muted)}
+.legend div:hover{background:var(--panel);color:var(--text)}
+.legend i{width:10px;height:10px;border-radius:3px;flex:none}
+.legend b{margin-left:auto;color:var(--text);font-weight:600;font-variant-numeric:tabular-nums}
+.legend small{color:var(--dim);width:40px;text-align:right}
+/* Spielelisten */
+.gl{display:grid;gap:2px}
+.gl-row{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:11px;align-items:center;padding:4px 6px;border-radius:9px;cursor:pointer}
+.gl-row:hover{background:var(--panel)}
+.gl-row .thumb{width:32px;height:43px;border-radius:6px;overflow:hidden;position:relative;background:var(--panel2)}
+.gl-row .thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.gl-row .ph{position:absolute;inset:0;display:grid;place-items:center}
+.gl-row .ph i{font-style:normal;font-size:12px;font-weight:800;color:#fff}
+.gl-n{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gl-s{font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gl-bar{height:6px;margin-top:5px}
+.gl-bar i{display:block;height:100%;border-radius:0 4px 4px 0;background:var(--accent)}
+.gl-v{text-align:right;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gl-v small{display:block;color:var(--dim);font-size:11.5px}
+.gl-rk{font-size:11px;color:var(--dim);margin-right:6px;font-variant-numeric:tabular-nums}
+/* Wertungen & Fakten */
+.st-rates{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.st-rates .kpi{min-width:0;flex:1 1 130px}
+.st-rates .kpi small{text-transform:none;letter-spacing:0;font-size:12px}
+.st-rates .kpi em{display:block;font-style:normal;color:var(--dim);font-size:11.5px}
+.st-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.st-fact{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.st-fact[data-gid]{cursor:pointer}.st-fact[data-gid]:hover{border-color:var(--accent)}
+.st-fact small{display:block;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.st-fact b{display:block;font-size:16px;margin:3px 0 1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-fact span{color:var(--muted);font-size:12.5px}
+.st-tip{position:fixed;z-index:90;pointer-events:none;background:var(--panel2);border:1px solid #3a4258;border-radius:9px;padding:7px 10px;font-size:12.5px;line-height:1.4;color:var(--muted);box-shadow:0 12px 30px -10px #000;max-width:280px}
+.st-tip b{display:block;color:var(--text);font-size:13px}
+@media (max-width:1100px){.st-card.w8,.st-card.w4{grid-column:1/-1}}
+@media (max-width:980px){#statBtn .l{display:none}.st-card{grid-column:1/-1!important}}
+@media (max-width:760px){
+  .stv{padding:12px 12px calc(40px + env(safe-area-inset-bottom))}
+  .st-head h1{font-size:20px}
+  .st-kpis{grid-template-columns:1fr 1fr;gap:8px}
+  .st-kpi{padding:10px 12px}.st-kpi b{font-size:21px}
+  .st-card{padding:14px 12px}
+  .cols{height:150px}
+  .hb-row{grid-template-columns:minmax(80px,38%) 1fr auto;gap:8px;font-size:13px}
+}
 </style>
 </head>
 <body>
@@ -410,7 +501,8 @@ details.orig .desc{margin-top:8px}
       <input id="q" type="search" placeholder="Spiel, Entwickler, Genre suchen …" autocomplete="off">
       <kbd>/</kbd>
     </div>
-    <div class="stats" id="stats"></div>
+    <div class="stats" id="stats" title="Zur Statistik"></div>
+    <button class="btn" id="statBtn" title="Statistik zur Sammlung">📊 <span class="l">Statistik</span></button>
     <button class="btn" id="aiBtn" hidden title="KI-Texte (Good to Know) erzeugen &amp; konfigurieren">✨ <span class="l">KI-Texte</span> <span class="pr" id="aiPr"></span></button>
     <button class="btn" id="impBtn" hidden title="Neuen Playnite-Export importieren">⇪ <span>Import</span></button>
     <button class="btn" id="admOut" hidden title="Admin abmelden" aria-label="Admin abmelden">🔓<span class="l">Abmelden</span></button>
@@ -452,6 +544,8 @@ details.orig .desc{margin-top:8px}
     <div class="foot">Export aus Playnite · <a href="index-classic.html">Klassische Ansicht</a><span id="instWrap" hidden> · <a href="#" id="instLink">📲 Als App installieren</a></span></div>
   </main>
 </div>
+<section class="stv" id="statsView" hidden></section>
+<div class="st-tip" id="stTip" hidden></div>
 <div class="ovl" id="ovl"><div class="dlg" id="dlg"></div></div>
 <div class="gtk-ovl" id="gtk"><div class="gtk-panel" role="dialog" aria-modal="true" id="gtkBody"></div></div>
 <div class="lb" id="lb" onclick="this.classList.remove('open')"><img alt=""></div>
@@ -578,6 +672,7 @@ const FILTERS=[
   {k:'flags',t:'Sonstiges',get:g=>[g.installed&&'Installiert',g.playtime>0&&'Mit Spielzeit',g.cover?'Mit Cover':'Ohne Cover',g.favorite&&'Favorit'].filter(Boolean)},
 ];
 let G=[],S={q:'',sort:'name',view:'grid',quick:'all',f:{}},list=[],cur=-1;
+const STV={on:false,lib:'',act:'last',range:24,lmet:'playtime',dim:'genres',met:'playtime'};
 const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
 const fmtH=s=>{if(!s)return '–';let h=Math.floor(s/3600),m=Math.round(s%3600/60);if(m===60){h++;m=0}return h?(h>=100?`${h.toLocaleString('de-DE')} h`:`${h} h ${m?m+' min':''}`.trim()):`${m} min`};
@@ -595,6 +690,7 @@ function readHash(){
   return null;
 }
 function writeHash(){
+  if(STV.on)return;
   const p=new URLSearchParams();if(S.q)p.set('q',S.q);if(S.sort!=='name')p.set('sort',S.sort);if(S.quick!=='all')p.set('v',S.quick);
   for(const k in S.f)for(const v of S.f[k])p.append(k,v);
   const s=p.toString();if(location.hash.startsWith('#game/'))return;history.replaceState(null,'',s?'#'+s:location.pathname);
@@ -1043,12 +1139,205 @@ $('#instOvl').addEventListener('click',e=>{if(e.target.id==='instOvl')$('#instOv
 $('#gtk').addEventListener('click',e=>{if(e.target.id==='gtk'||e.target.closest('#gtkX'))closeGtk();
   if(e.target.closest('#gtkRegen')&&CUR_AI)aiOneGame(CUR_AI.g,e.target.closest('#gtkRegen'),$('#gtkRegenMsg'))});
 
+// ---------- Statistik (#stats)
+// Farben je Status fest zugeordnet (folgen dem Status, nicht der Rangfolge)
+const SCOL={'Not Played':'#4b5368','Plan to Play':'#9085e9','Playing':'#199e70','Played':'#3987e5','On Hold':'#d95926','Beaten':'#c98500','Completed':'#d55181','Abandoned':'#e66767'};
+const DIMS={genres:['Genre',g=>g.genres],features:['Eigenschaften',g=>g.features],developers:['Entwickler',g=>g.developers],publishers:['Publisher',g=>g.publishers],
+  tags:['Tags',g=>g.tags],platforms:['Plattform',g=>g.platforms],source:['Quelle',g=>[g.source].filter(Boolean)]};
+const nf=n=>Math.round(n).toLocaleString('de-DE');
+const hrs=s=>s?nf(s/3600)+' h':'–';
+const pct=(a,b)=>b?Math.round(a/b*100)+' %':'–';
+const daysAgo=d=>Math.floor((Date.now()-new Date(d))/864e5);
+const rel=d=>{const n=daysAgo(d);if(n<=0)return 'heute';if(n===1)return 'gestern';if(n<31)return `vor ${n} Tagen`;
+  const m=Math.round(n/30.44);if(n<365)return m===1?'vor 1 Monat':`vor ${m} Monaten`;const y=n/365.25;return y<1.5?'vor 1 Jahr':`vor ${y.toFixed(1).replace('.',',').replace(',0','')} Jahren`};
+const yearOf=g=>g.year||+(String(g.release).match(/^\d{4}/)||[0])[0]||0;
+const scoreOf=g=>g.metacritic||g.critic||g.community||null;
+const nice=m=>{if(m<=1)return 1;const p=10**Math.floor(Math.log10(m)),f=m/p;return (f<=1?1:f<=2?2:f<=5?5:10)*p};
+function agg(P,fn){const c={};P.forEach(g=>{for(const v of fn(g)){if(!v)continue;const e=c[v]||(c[v]={n:0,t:0});e.n++;e.t+=g.playtime}});return c}
+function seg(key,opts){return `<div class="seg">${opts.map(([v,l])=>`<button data-set="${key}" data-val="${v}"${String(STV[key])===String(v)?' class="on"':''}>${l}</button>`).join('')}</div>`}
+function card(cls,title,sub,ctl,body){return `<div class="st-card ${cls}"><div class="st-ch"><div><h3>${title}</h3>${sub?`<p>${sub}</p>`:''}</div>${ctl?`<div class="st-ctl">${ctl}</div>`:''}</div>${body}</div>`}
+function cols(data,every){const top=nice(Math.max(1,...data.map(d=>d.v))),half=top/2;
+  return `<div class="cols"><div class="cols-g" style="bottom:100%"><span>${nf(top)}</span></div>${Number.isInteger(half)?`<div class="cols-g" style="bottom:50%"><span>${nf(half)}</span></div>`:''}
+    ${data.map(d=>`<div class="col" data-tip="${esc(d.t)}"><i style="height:${d.v/top*100}%"></i></div>`).join('')}</div>
+    <div class="cols-x">${data.map((d,i)=>`<span>${every(d,i)?esc(d.l):''}</span>`).join('')}</div>`}
+function hbars(rows){const max=Math.max(1,...rows.map(r=>r.v));
+  return rows.length?`<div class="hb">${rows.map(r=>`<div class="hb-row"${r.fk?` data-fk="${r.fk}" data-fv="${esc(r.fv)}"`:''} data-tip="${esc(r.tip)}">
+    <div class="hb-l">${r.c?`<i class="dot" style="background:${r.c}"></i>`:''}<span>${esc(r.l)}</span></div>
+    <div class="hb-t"><i style="width:${r.v/max*100}%${r.c?';background:'+r.c:''}"></i></div><div class="hb-v">${r.txt}</div></div>`).join('')}</div>`:'<div class="st-none">Keine Daten</div>'}
+function gRow(g,right,sub,bar,rank){return `<div class="gl-row" data-gid="${g.id}" title="${esc(g.name)}"><div class="thumb">${img(g)}</div>
+  <div style="min-width:0"><div class="gl-n">${rank?`<span class="gl-rk">${rank}</span>`:''}${esc(g.name)}</div>${bar!=null?`<div class="gl-bar"><i style="width:${Math.max(1,bar)}%"></i></div>`:`<div class="gl-s">${esc(sub||'')}</div>`}</div>
+  <div class="gl-v">${right}</div></div>`}
+const glist=(rows,empty)=>rows.length?`<div class="gl">${rows.join('')}</div>`:`<div class="st-none">${empty}</div>`;
+const tipNames=gs=>gs.length?'<br>'+gs.slice(0,3).map(g=>esc(g.name)).join(', ')+(gs.length>3?` <i>+${gs.length-3}</i>`:''):'';
+
+function actSeries(P){const key=STV.act,ds=P.filter(g=>/^\d{4}-\d\d/.test(g[key]||''));
+  if(STV.range==='y'){const c={};ds.forEach(g=>{const y=g[key].slice(0,4);(c[y]=c[y]||[]).push(g)});const ys=Object.keys(c).sort();if(!ys.length)return [];
+    const out=[];for(let y=+ys[0];y<=+ys.at(-1);y++){const gs=c[y]||[];out.push({l:String(y),v:gs.length,gs,t:`<b>${y}</b>${gs.length} Spiele`})}return out}
+  const n=+STV.range,now=new Date(),out=[],idx={};
+  for(let i=n-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1),k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    idx[k]=out.length;out.push({l:d.toLocaleDateString('de-DE',{month:'short'}).replace('.','')+(d.getMonth()===0||i===n-1?' '+String(d.getFullYear()).slice(2):''),
+      name:d.toLocaleDateString('de-DE',{month:'long',year:'numeric'}),v:0,gs:[]})}
+  ds.forEach(g=>{const i=idx[g[key].slice(0,7)];if(i!=null){out[i].v++;out[i].gs.push(g)}});
+  out.forEach(o=>{o.gs.sort((a,b)=>b.playtime-a.playtime);o.t=`<b>${o.name}</b>${o.v} ${o.v===1?'Spiel':'Spiele'}${tipNames(o.gs)}`});return out}
+
+function renderStats(){
+  const el=$('#statsView');
+  if(!G.length){el.innerHTML=`<div class="empty"><b>Noch keine Daten</b>Sobald eine Bibliothek importiert ist, erscheinen hier die Statistiken.</div>`;return}
+  const libs=Object.entries(agg(G,g=>[g.library])).sort((a,b)=>b[1].n-a[1].n).map(e=>e[0]);
+  if(STV.lib&&!libs.includes(STV.lib))STV.lib='';
+  const P=STV.lib?G.filter(g=>g.library===STV.lib):G;
+  const played=P.filter(g=>g.playtime>0).sort((a,b)=>b.playtime-a.playtime),total=played.reduce((s,g)=>s+g.playtime,0);
+  const med=played.length?(played.length%2?played[played.length>>1].playtime:(played[played.length/2-1].playtime+played[played.length/2].playtime)/2):0;
+  const done=P.filter(g=>g.status==='Beaten'||g.status==='Completed').length;
+  const backlog=P.filter(g=>!g.status||g.status==='Not Played'||g.status==='Plan to Play').length;
+  const r30=P.filter(g=>g.last&&daysAgo(g.last)<=30),top10=played.slice(0,10).reduce((s,g)=>s+g.playtime,0);
+  const kpi=(l,v,s)=>`<div class="st-kpi"><small>${l}</small><b>${v}</b><span>${s}</span></div>`;
+  const ev=n=>(d,i)=>i%Math.max(1,Math.ceil(n/(innerWidth<760?6:14)))===0;
+
+  // Meistgespielt + zuletzt gespielt
+  const tmax=played[0]?played[0].playtime:1;
+  const topList=glist(played.slice(0,12).map((g,i)=>gRow(g,`<b>${fmtH(g.playtime)}</b><small>${pct(g.playtime,total)}</small>`,'',g.playtime/tmax*100,i+1)),'Noch keine Spielzeit erfasst');
+  const recent=glist(P.filter(g=>g.last).sort((a,b)=>a.last<b.last?1:-1).slice(0,10).map(g=>gRow(g,`<span>${rel(g.last)}</span><small>${fmtD(g.last)}</small>`,`${fmtH(g.playtime)} · ${g.library}`)),'Keine Aktivität erfasst');
+
+  // Aktivität
+  const act=actSeries(P);
+  const actBody=act.length&&act.some(d=>d.v)?cols(act,STV.range==='y'?(d,i)=>act.length<=16||+d.l%5===0||i===0:ev(act.length)):'<div class="st-none">Keine Daten im gewählten Zeitraum</div>';
+
+  // Status
+  const sc={};P.forEach(g=>{const s=g.status||'';sc[s]=(sc[s]||0)+1});
+  const sOrd=[...Object.keys(SCOL).filter(s=>sc[s]),...Object.keys(sc).filter(s=>!SCOL[s])];
+  const sName=s=>STATUS[s]||s||'Ohne Status';
+  const status=`<div class="stack">${sOrd.map(s=>`<i style="flex:${sc[s]} 1 0;background:${SCOL[s]||'#8b93a7'}" data-tip="${esc(`<b>${esc(sName(s))}</b>${sc[s]} Spiele · ${pct(sc[s],P.length)}`)}"></i>`).join('')}</div>
+    <div class="legend">${sOrd.map(s=>`<div data-fk="status" data-fv="${esc(STATUS[s]||s)}" title="In der Bibliothek anzeigen"><i style="background:${SCOL[s]||'#8b93a7'}"></i>${esc(sName(s))}<b>${sc[s]}</b><small>${pct(sc[s],P.length)}</small></div>`).join('')}</div>`;
+
+  // Spielzeit-Verteilung
+  const B=[[0,3600,'<1'],[3600,18000,'1–5'],[18000,36000,'5–10'],[36000,90000,'10–25'],[90000,180000,'25–50'],[180000,360000,'50–100'],[360000,900000,'100–250'],[900000,Infinity,'250+']];
+  const hist=B.map(([a,b,l])=>{const gs=played.filter(g=>g.playtime>=a&&g.playtime<b);return {l,v:gs.length,t:`<b>${l} Stunden</b>${gs.length} Spiele${tipNames(gs)}`}});
+
+  // Bibliotheken
+  const la=agg(P,g=>[g.library]),lm=STV.lmet==='playtime'?'t':'n';
+  const libRows=Object.entries(la).sort((a,b)=>b[1][lm]-a[1][lm]||b[1].n-a[1].n).map(([l,e])=>({l,v:e[lm],c:LIBCOL[l]||'#8b93a7',fk:'library',fv:l,
+    txt:lm==='t'?`${hrs(e.t)}<small>${e.n} Spiele</small>`:`${e.n}<small>${hrs(e.t)}</small>`,tip:`<b>${esc(l)}</b>${e.n} Spiele · ${hrs(e.t)} · Ø ${fmtH(e.t/e.n)}`}));
+
+  // Rangliste nach Dimension
+  const [dimT,dimFn]=DIMS[STV.dim],da=agg(P,dimFn),dm=STV.met==='playtime'?'t':'n',canF=FILTERS.some(F=>F.k===STV.dim);
+  const rank=Object.entries(da).sort((a,b)=>b[1][dm]-a[1][dm]||b[1].n-a[1].n).slice(0,12).map(([l,e])=>({l,v:e[dm],fk:canF?STV.dim:'',fv:l,
+    txt:dm==='t'?`${hrs(e.t)}<small>${e.n}</small>`:`${e.n}<small>${hrs(e.t)}</small>`,tip:`<b>${esc(l)}</b>${e.n} Spiele · ${hrs(e.t)} gespielt`}));
+
+  // Erscheinungsjahre
+  const yc={};P.forEach(g=>{const y=yearOf(g);if(y>1950&&y<2100)(yc[y]=yc[y]||[]).push(g)});
+  const ys=Object.keys(yc).map(Number).sort((a,b)=>a-b),years=[];
+  if(ys.length)for(let y=ys[0];y<=ys.at(-1);y++){const gs=(yc[y]||[]).sort((a,b)=>b.playtime-a.playtime);years.push({l:String(y),v:gs.length,t:`<b>${y}</b>${gs.length} Spiele · ${hrs(gs.reduce((s,g)=>s+g.playtime,0))}${tipNames(gs)}`})}
+
+  // Wertungen
+  const avg=k=>{const v=P.map(g=>g[k]).filter(x=>x!=null);return v.length?{a:Math.round(v.reduce((s,x)=>s+x,0)/v.length),n:v.length}:null};
+  const rt=[['user','Meine Wertung','#34d399'],['metacritic','Metacritic','#fbbf24'],['community','Community','#22d3ee'],['critic','Kritiker','#a78bfa']]
+    .map(([k,l,c])=>{const a=avg(k);return a?`<div class="kpi score"><div class="ring" style="--v:${a.a};--c:${c}"><span>${a.a}</span></div><div><small>Ø ${l}</small><em>${a.n} Spiele</em></div></div>`:''}).join('');
+  const rk=P.some(g=>g.user!=null)?'user':'community';
+  const best=glist(P.filter(g=>g[rk]!=null).sort((a,b)=>b[rk]-a[rk]||b.playtime-a.playtime).slice(0,6).map(g=>gRow(g,`<b>${g[rk]}</b><small>${fmtH(g.playtime)}</small>`,[g.genres[0],yearOf(g)||''].filter(Boolean).join(' · '))),'Keine Wertungen vorhanden');
+
+  // Perlen im Backlog & vergessene Lieblinge
+  const gems=glist(P.filter(g=>!g.playtime&&scoreOf(g)&&g.status!=='Abandoned').sort((a,b)=>scoreOf(b)-scoreOf(a)).slice(0,8)
+    .map(g=>gRow(g,`<b>${scoreOf(g)}</b><small>${g.metacritic?'Metacritic':g.critic?'Kritiker':'Community'}</small>`,[g.genres.slice(0,2).join(', '),g.library].filter(Boolean).join(' · '))),'Kein ungespieltes Spiel mit Wertung');
+  const forgot=glist(played.filter(g=>g.playtime>=18000&&g.last&&daysAgo(g.last)>365).slice(0,8)
+    .map(g=>gRow(g,`<b>${fmtH(g.playtime)}</b><small>${rel(g.last)}</small>`,`${STATUS[g.status]||g.status||''} · ${g.library}`)),'Nichts gefunden – du bleibst deinen Spielen treu 👍');
+
+  // Fun Facts
+  const addedD=P.map(g=>g.added).filter(Boolean).sort(),first=addedD[0];
+  const months=first?Math.max(1,(Date.now()-new Date(first))/(30.44*864e5)):0;
+  const withY=P.filter(g=>yearOf(g)>1950).sort((a,b)=>yearOf(a)-yearOf(b));
+  const withR=P.filter(g=>/^\d{4}-\d\d-\d\d$/.test(g.release)).sort((a,b)=>a.release<b.release?-1:1);
+  const topOf=fn=>{const e=Object.entries(agg(played,fn)).sort((a,b)=>b[1].t-a[1].t)[0];return e?{k:e[0],t:e[1].t,n:e[1].n}:null};
+  const fg=topOf(g=>g.genres),fd=topOf(g=>g.developers);
+  const tasted=played.filter(g=>g.playtime<3600).length,instNo=P.filter(g=>g.installed&&!g.playtime).length;
+  const fact=(l,v,s,g)=>`<div class="st-fact"${g?` data-gid="${g.id}"`:''}><small>${l}</small><b title="${esc(v)}">${esc(v)}</b><span>${s}</span></div>`;
+  const facts=[
+    first&&fact('Sammlung seit',fmtD(first),`Ø ${(addedD.length/months).toFixed(1).replace('.',',')} neue Spiele pro Monat`),
+    first&&total&&fact('Spielzeit pro Tag',fmtH(total/Math.max(1,daysAgo(first))),'im Schnitt seit Sammlungsbeginn'),
+    fg&&fact('Lieblingsgenre',fg.k,`${hrs(fg.t)} in ${fg.n} Spielen`),
+    fd&&fact('Lieblingsstudio',fd.k,`${hrs(fd.t)} in ${fd.n} Spielen`),
+    withY[0]&&fact('Ältestes Spiel',withY[0].name,`erschienen ${yearOf(withY[0])}`,withY[0]),
+    withR.length&&fact('Neuestes Spiel',withR.at(-1).name,`erschienen ${fmtD(withR.at(-1).release)}`,withR.at(-1)),
+    fact('Nur angespielt',`${tasted} Spiele`,'weniger als 1 Stunde Spielzeit'),
+    fact('Installiert, nie gespielt',`${instNo} Spiele`,'warten auf ihren ersten Start'),
+    total&&fact('Gesamtspielzeit',`${(total/86400).toFixed(1).replace('.',',')} Tage`,`≈ ${nf(total/7200)} Spielfilme à 2 Stunden`),
+  ].filter(Boolean).join('');
+
+  el.innerHTML=`<div class="st-head"><h1>📊 Statistik</h1><span class="muted">${STV.lib?esc(STV.lib)+' · ':''}${P.length} Spiele</span>
+      <select class="sel" id="stLib" aria-label="Bibliothek"><option value="">Alle Bibliotheken</option>${libs.map(l=>`<option${l===STV.lib?' selected':''}>${esc(l)}</option>`).join('')}</select>
+      <button class="btn" id="stBack">← Bibliothek</button></div>
+    <div class="st-kpis">
+      ${kpi('Spiele',nf(P.length),`${P.filter(g=>g.installed).length} installiert · ${P.filter(g=>g.favorite).length} Favoriten`)}
+      ${kpi('Gesamtspielzeit',hrs(total),`≈ ${(total/86400).toFixed(1).replace('.',',')} Tage`)}
+      ${kpi('Gespielt',nf(played.length),`${pct(played.length,P.length)} der Sammlung`)}
+      ${kpi('Ø pro Spiel',fmtH(played.length?total/played.length:0),`Median ${fmtH(med)}`)}
+      ${kpi('Durchgespielt',nf(done),`${pct(done,played.length)} der gespielten`)}
+      ${kpi('Backlog',nf(backlog),`${pct(backlog,P.length)} ungespielt/geplant`)}
+      ${kpi('Letzte 30 Tage',nf(r30.length),r30.length===1?'Spiel aktiv':'Spiele aktiv')}
+      ${kpi('Top-10-Anteil',pct(top10,total),'der gesamten Spielzeit')}
+    </div>
+    <div class="st-grid">
+      ${card('w8','🏆 Meistgespielt','Nach Spielzeit · Anteil an der Gesamtzeit','',topList)}
+      ${card('w4','🕹️ Zuletzt gespielt','Nach letzter Aktivität','',recent)}
+      ${card('w12','📈 Aktivität',STV.act==='last'?'Spiele nach ihrer letzten Aktivität (Playnite exportiert keine einzelnen Spielsitzungen)':'Neu zur Bibliothek hinzugefügte Spiele',
+        seg('act',[['last','Zuletzt gespielt'],['added','Hinzugefügt']])+seg('range',[[12,'12 Monate'],[24,'24 Monate'],['y','Jahre']]),actBody)}
+      ${card('','🎯 Status','Klick auf einen Status zeigt die Spiele in der Bibliothek','',status)}
+      ${card('','⏱️ Spielzeit-Verteilung',`Spiele je Spielzeit in Stunden · ${played.length} gespielt, ${P.length-played.length} ohne Spielzeit`,'',played.length?cols(hist,()=>true):'<div class="st-none">Keine Spielzeit erfasst</div>')}
+      ${card('','📚 Bibliotheken','Klick filtert die Bibliothek',seg('lmet',[['playtime','Spielzeit'],['count','Anzahl']]),hbars(libRows))}
+      ${card('','🏷️ Rangliste',`Top 12 nach ${dimT}${canF?' · Klick filtert die Bibliothek':''}`,
+        `<select class="sel" id="stDim" aria-label="Kategorie">${Object.entries(DIMS).map(([k,[t]])=>`<option value="${k}"${k===STV.dim?' selected':''}>${t}</option>`).join('')}</select>`+seg('met',[['playtime','Spielzeit'],['count','Anzahl']]),hbars(rank))}
+      ${card('','📅 Erscheinungsjahre','Spiele nach Erscheinungsjahr','',years.length?cols(years,(d,i)=>years.length<=16||+d.l%5===0):'<div class="st-none">Keine Daten</div>')}
+      ${card('','⭐ Wertungen',rk==='user'?'Deine bestbewerteten Spiele':'Bestbewertet laut Community','',(rt?`<div class="st-rates">${rt}</div>`:'')+best)}
+      ${card('','💎 Perlen im Backlog','Gut bewertet, aber noch nie gestartet','',gems)}
+      ${card('','🕸️ Lange nicht mehr gespielt','Mindestens 5 h gespielt, letzte Aktivität vor über einem Jahr','',forgot)}
+      ${card('w12','✨ Fun Facts','','',`<div class="st-facts">${facts}</div>`)}
+    </div>`;
+}
+function showStats(){
+  STV.on=true;closeSide();$('.wrap').hidden=true;$('#statsView').hidden=false;$('#statBtn').classList.add('on');
+  if(location.hash!=='#stats')history.pushState({st:1},'','#stats');
+  renderStats();scrollTo({top:0});
+}
+function hideStats(push){
+  if(!STV.on)return;STV.on=false;$('#stTip').hidden=true;
+  $('.wrap').hidden=false;$('#statsView').hidden=true;$('#statBtn').classList.remove('on');
+  if(push&&location.hash==='#stats')history.pushState(null,'',location.pathname+location.search);
+  writeHash();scrollTo({top:0});
+}
+function statsGame(id){let i=list.findIndex(g=>g.id===id);
+  if(i<0){S.f={};S.q='';$('#q').value='';S.quick='all';syncSeg();apply();i=list.findIndex(g=>g.id===id)}
+  if(i>=0)openGame(i)}
+function statsFilter(k,v){hideStats(true);S.f={};S.f[k]=new Set([v]);S.q='';$('#q').value='';S.quick='all';
+  if(STV.lib&&k!=='library')S.f.library=new Set([STV.lib]);syncSeg();apply()}
+$('#statBtn').onclick=()=>STV.on?hideStats(true):showStats();
+$('#stats').onclick=showStats;
+$('#q').addEventListener('input',()=>hideStats(true));
+$('#statsView').addEventListener('click',e=>{
+  if(e.target.closest('#stBack'))return hideStats(true);
+  const b=e.target.closest('[data-set]');if(b){const v=b.dataset.val;STV[b.dataset.set]=/^\d+$/.test(v)?+v:v;return renderStats()}
+  const gr=e.target.closest('[data-gid]');if(gr)return statsGame(gr.dataset.gid);
+  const f=e.target.closest('[data-fk]');if(f&&f.dataset.fk&&f.dataset.fv)statsFilter(f.dataset.fk,f.dataset.fv);
+});
+$('#statsView').addEventListener('change',e=>{if(e.target.id==='stLib')STV.lib=e.target.value;else if(e.target.id==='stDim')STV.dim=e.target.value;else return;renderStats()});
+(()=>{const tip=$('#stTip'),v=$('#statsView');
+  const show=e=>{const t=e.target.closest&&e.target.closest('[data-tip]');if(!t){tip.hidden=true;return}
+    tip.innerHTML=t.dataset.tip;tip.hidden=false;const r=tip.getBoundingClientRect();
+    let x=e.clientX+14,y=e.clientY+14;if(x+r.width>innerWidth-8)x=Math.max(8,e.clientX-r.width-14);if(y+r.height>innerHeight-8)y=e.clientY-r.height-14;
+    tip.style.left=x+'px';tip.style.top=y+'px'};
+  v.addEventListener('pointermove',show);v.addEventListener('pointerdown',show);
+  v.addEventListener('pointerleave',()=>tip.hidden=true);addEventListener('scroll',()=>tip.hidden=true,{passive:true})})();
+window.addEventListener('popstate',()=>{if(location.hash==='#stats'){if(!STV.on)showStats()}else if(STV.on&&!location.hash.startsWith('#game/'))hideStats()});
+// nur neu zeichnen, wenn sich die Achsenbeschriftung ändert (nicht bei jeder Adressleisten-Bewegung am Handy)
+addEventListener('resize',()=>{const n=innerWidth<760;if(!STV.on||n===STV.narrow)return;STV.narrow=n;clearTimeout(STV.rt);STV.rt=setTimeout(renderStats,250)});
+
 fetch('games.json',{cache:'no-cache'}).then(r=>r.json()).then(data=>{
   G=data.map(g=>Object.assign(g,{_n:norm(g.name),_s:norm([g.name,g.library,g.source,...g.genres,...g.developers,...g.publishers,...g.features,...g.tags].join(' '))}));
   const total=G.reduce((s,g)=>s+g.playtime,0),played=G.filter(g=>g.playtime>0).length;
   $('#stats').innerHTML=`<span><b>${G.length}</b> Spiele</span><span><b>${played}</b> gespielt</span><span><b>${Math.round(total/3600).toLocaleString('de-DE')}</b> Stunden</span>`;
   try{S.view=localStorage.getItem('eg-view')||'grid'}catch(_){}
+  STV.on=location.hash==='#stats';
   const gid=readHash();$('#q').value=S.q;syncSeg();apply();
+  if(STV.on)showStats();
   if(gid){const i=list.findIndex(g=>g.id===gid);if(i>=0)openGame(i)}
 }).catch(err=>{$('#grid').innerHTML=`<div class="empty"><b>games.json konnte nicht geladen werden</b>${esc(err)}</div>`});
 </script>

@@ -38,6 +38,7 @@ Weitere Bilder: [Screenshots](#screenshots)
 - **Modernes Design** (Dark Mode), Raster- und Listenansicht, optimiert für Desktop **und Handy** (Filter als Bottom-Sheet, Wischgesten, Zurück-Taste schließt Detailansicht)
 - **Schnellsuche** über Titel, Entwickler, Genres, Tags … (Taste `/`)
 - **Filter** nach Bibliothek, Status, Genre, Eigenschaften, Quelle, Entwickler, Publisher, Jahrzehnt, Installiert/Favorit …; Schnellansichten *Zuletzt gespielt*, *Meistgespielt*, *Neu*, *Backlog*; Sortierung
+- **Statistik-Seite** (📊 oben rechts oder `#stats`): Kennzahlen, Meistgespielt, Zuletzt gespielt, Aktivität pro Monat/Jahr, Status- und Spielzeit-Verteilung, Bibliotheken, Ranglisten nach Genre/Entwickler/Publisher/Tags …, Erscheinungsjahre, Wertungen, „Perlen im Backlog“, „Lange nicht mehr gespielt“ und Fun Facts – filterbar nach Bibliothek, Klicks führen direkt zum Spiel bzw. zur gefilterten Bibliothek
 - **Detailansicht** mit Spielzeit, Status, Metacritic/Community/Kritiker-Wertung, Steam-Beschreibung („Über das Spiel“), Trailer, Screenshots, Sprachen, Systemanforderungen, Links
 - **Fehlende Cover** werden automatisch über den Steam-Store ergänzt
 - **Steam-Details** (deutsch) für alle Steam-Spiele und per Namenssuche zugeordnete Spiele anderer Stores
