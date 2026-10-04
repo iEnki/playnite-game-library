@@ -1170,6 +1170,12 @@ function gRow(g,right,sub,bar,rank){return `<div class="gl-row" data-gid="${g.id
 const glist=(rows,empty)=>rows.length?`<div class="gl">${rows.join('')}</div>`:`<div class="st-none">${empty}</div>`;
 const tipNames=gs=>gs.length?'<br>'+gs.slice(0,3).map(g=>esc(g.name)).join(', ')+(gs.length>3?` <i>+${gs.length-3}</i>`:''):'';
 
+// Liegt über die Hälfte der „Hinzugefügt“-Daten in einem 14-Tage-Fenster, stammen sie von einem
+// Neuimport/Neuinstallation von Playnite und taugen nicht als Sammlungsbeginn.
+function addedInfo(P){const d=P.map(g=>g.added).filter(Boolean).map(s=>+new Date(s)).sort((a,b)=>a-b);
+  if(d.length<20)return {ok:true};let best=0,at=0;
+  for(let i=0,j=0;i<d.length;i++){while(d[i]-d[j]>14*864e5)j++;if(i-j+1>best){best=i-j+1;at=d[j]}}
+  return {ok:best/d.length<=.5,share:best/d.length,date:new Date(at).toISOString().slice(0,10)}}
 function actSeries(P){const key=STV.act,ds=P.filter(g=>/^\d{4}-\d\d/.test(g[key]||''));
   if(STV.range==='y'){const c={};ds.forEach(g=>{const y=g[key].slice(0,4);(c[y]=c[y]||[]).push(g)});const ys=Object.keys(c).sort();if(!ys.length)return [];
     const out=[];for(let y=+ys[0];y<=+ys.at(-1);y++){const gs=c[y]||[];out.push({l:String(y),v:gs.length,gs,t:`<b>${y}</b>${gs.length} Spiele`})}return out}
@@ -1243,24 +1249,35 @@ function renderStats(){
     .map(g=>gRow(g,`<b>${fmtH(g.playtime)}</b><small>${rel(g.last)}</small>`,`${STATUS[g.status]||g.status||''} · ${g.library}`)),'Nichts gefunden – du bleibst deinen Spielen treu 👍');
 
   // Fun Facts
-  const addedD=P.map(g=>g.added).filter(Boolean).sort(),first=addedD[0];
-  const months=first?Math.max(1,(Date.now()-new Date(first))/(30.44*864e5)):0;
-  const withY=P.filter(g=>yearOf(g)>1950).sort((a,b)=>yearOf(a)-yearOf(b));
-  const withR=P.filter(g=>/^\d{4}-\d\d-\d\d$/.test(g.release)).sort((a,b)=>a.release<b.release?-1:1);
+  // „Hinzugefügt“ ist nur brauchbar, wenn es nicht von einem Neuimport stammt (siehe addedInfo)
+  const AD=addedInfo(P),addedD=P.map(g=>g.added).filter(Boolean).sort();
+  const months=AD.ok&&addedD[0]?Math.max(1,(Date.now()-new Date(addedD[0]))/(30.44*864e5)):0;
+  const todayS=new Date().toISOString().slice(0,10);
+  const withY=P.filter(g=>yearOf(g)>1950&&yearOf(g)<2100).sort((a,b)=>yearOf(a)-yearOf(b));
+  // Platzhalter wie 9998-12-30 und noch nicht erschienene Spiele ausblenden
+  const withR=P.filter(g=>/^\d{4}-\d\d-\d\d$/.test(g.release)&&g.release<=todayS&&+g.release.slice(0,4)>1950).sort((a,b)=>a.release<b.release?-1:1);
+  const upcoming=P.filter(g=>/^\d{4}-\d\d-\d\d$/.test(g.release)&&g.release>todayS&&+g.release.slice(0,4)<2100).length;
+  const oldestLast=P.filter(g=>g.last&&g.playtime).sort((a,b)=>a.last<b.last?-1:1)[0];
   const topOf=fn=>{const e=Object.entries(agg(played,fn)).sort((a,b)=>b[1].t-a[1].t)[0];return e?{k:e[0],t:e[1].t,n:e[1].n}:null};
-  const fg=topOf(g=>g.genres),fd=topOf(g=>g.developers);
-  const tasted=played.filter(g=>g.playtime<3600).length,instNo=P.filter(g=>g.installed&&!g.playtime).length;
+  const fg=topOf(g=>g.genres),fd=topOf(g=>g.developers),fy=topOf(g=>{const y=yearOf(g);return y>1950&&y<2100?[y]:[]});
+  const tasted=played.filter(g=>g.playtime<3600).length,instNo=P.filter(g=>g.installed&&!g.playtime).length,marathon=played.filter(g=>g.playtime>=360000).length;
+  const span=d=>d<60?`${Math.round(d)} Tage`:d<730?`${Math.round(d/30.44)} Monate`:`${(d/365.25).toFixed(1).replace('.',',').replace(',0','')} Jahre`;
+  const blDays=backlog*med/7200; // Backlog × Median-Spielzeit, bei 2 h pro Tag
   const fact=(l,v,s,g)=>`<div class="st-fact"${g?` data-gid="${g.id}"`:''}><small>${l}</small><b title="${esc(v)}">${esc(v)}</b><span>${s}</span></div>`;
   const facts=[
-    first&&fact('Sammlung seit',fmtD(first),`Ø ${(addedD.length/months).toFixed(1).replace('.',',')} neue Spiele pro Monat`),
-    first&&total&&fact('Spielzeit pro Tag',fmtH(total/Math.max(1,daysAgo(first))),'im Schnitt seit Sammlungsbeginn'),
+    AD.ok&&addedD[0]?fact('Sammlung seit',fmtD(addedD[0]),`Ø ${(addedD.length/months).toFixed(1).replace('.',',')} neue Spiele pro Monat`)
+      :oldestLast&&fact('Am längsten nicht gespielt',oldestLast.name,`zuletzt ${fmtD(oldestLast.last)} · ${rel(oldestLast.last)}`,oldestLast),
+    total&&fact('Bei 2 h pro Tag',span(total/7200),'so lange reicht deine gesamte Spielzeit'),
+    backlog&&med&&fact('Backlog-Prognose',span(blDays),`für ${backlog} offene Spiele bei 2 h am Tag (Ø ${fmtH(med)} pro Spiel)`),
+    total&&fact('Gesamtspielzeit',`${(total/86400).toFixed(1).replace('.',',')} Tage`,`≈ ${nf(total/7200)} Spielfilme à 2 Stunden`),
     fg&&fact('Lieblingsgenre',fg.k,`${hrs(fg.t)} in ${fg.n} Spielen`),
     fd&&fact('Lieblingsstudio',fd.k,`${hrs(fd.t)} in ${fd.n} Spielen`),
+    fy&&fact('Lieblingsjahrgang',fy.k,`${hrs(fy.t)} mit Spielen aus diesem Jahr`),
     withY[0]&&fact('Ältestes Spiel',withY[0].name,`erschienen ${yearOf(withY[0])}`,withY[0]),
-    withR.length&&fact('Neuestes Spiel',withR.at(-1).name,`erschienen ${fmtD(withR.at(-1).release)}`,withR.at(-1)),
+    withR.length&&fact('Neuestes Spiel',withR.at(-1).name,`erschienen ${fmtD(withR.at(-1).release)}${upcoming?` · ${upcoming} noch nicht erschienen`:''}`,withR.at(-1)),
+    fact('Dauerbrenner',`${marathon} Spiele`,'mit 100 Stunden oder mehr'),
     fact('Nur angespielt',`${tasted} Spiele`,'weniger als 1 Stunde Spielzeit'),
     fact('Installiert, nie gespielt',`${instNo} Spiele`,'warten auf ihren ersten Start'),
-    total&&fact('Gesamtspielzeit',`${(total/86400).toFixed(1).replace('.',',')} Tage`,`≈ ${nf(total/7200)} Spielfilme à 2 Stunden`),
   ].filter(Boolean).join('');
 
   el.innerHTML=`<div class="st-head"><h1>📊 Statistik</h1><span class="muted">${STV.lib?esc(STV.lib)+' · ':''}${P.length} Spiele</span>
@@ -1279,7 +1296,8 @@ function renderStats(){
     <div class="st-grid">
       ${card('w8','🏆 Meistgespielt','Nach Spielzeit · Anteil an der Gesamtzeit','',topList)}
       ${card('w4','🕹️ Zuletzt gespielt','Nach letzter Aktivität','',recent)}
-      ${card('w12','📈 Aktivität',STV.act==='last'?'Spiele nach ihrer letzten Aktivität (Playnite exportiert keine einzelnen Spielsitzungen)':'Neu zur Bibliothek hinzugefügte Spiele',
+      ${card('w12','📈 Aktivität',STV.act==='last'?'Spiele nach ihrer letzten Aktivität (Playnite exportiert keine einzelnen Spielsitzungen)'
+          :'Neu zur Bibliothek hinzugefügte Spiele'+(AD.ok?'':` · ⚠ ${pct(AD.share*P.length,P.length)} wurden um den ${fmtD(AD.date)} eingetragen (Neuimport in Playnite?) – der Verlauf ist daher nur bedingt aussagekräftig`),
         seg('act',[['last','Zuletzt gespielt'],['added','Hinzugefügt']])+seg('range',[[12,'12 Monate'],[24,'24 Monate'],['y','Jahre']]),actBody)}
       ${card('','🎯 Status','Klick auf einen Status zeigt die Spiele in der Bibliothek','',status)}
       ${card('','⏱️ Spielzeit-Verteilung',`Spiele je Spielzeit in Stunden · ${played.length} gespielt, ${P.length-played.length} ohne Spielzeit`,'',played.length?cols(hist,()=>true):'<div class="st-none">Keine Spielzeit erfasst</div>')}
