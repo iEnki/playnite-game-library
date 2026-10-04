@@ -53,14 +53,14 @@ Write-Host 'Upload ok - server is processing the export:' -ForegroundColor Cyan
 $shown = 0
 do {
     Start-Sleep -Seconds 2
-    $s = Invoke-RestMethod -Uri "$Url/api/status" -TimeoutSec 30
+    $s = Invoke-RestMethod -Uri "$Url/api/status" -Headers @{ 'X-Token' = $Token } -TimeoutSec 30
     $lines = @($s.log)
     if ($lines.Count -gt $shown) { $lines[$shown..($lines.Count - 1)] | ForEach-Object { Write-Host "  $_" }; $shown = $lines.Count }
 } while ($s.state -eq 'running')
 
 if ($s.state -eq 'done') {
     Write-Host ("Done: {0} games, {1} covers added." -f $s.summary.games, $s.summary.covers_filled) -ForegroundColor Green
-    if ($s.ai -and $s.ai.state -eq 'running') { Write-Host 'AI texts are being generated in the background (see the AI button on the website).' }
+    if ($s.ai -and $s.ai.state -eq 'running') { Write-Host 'AI texts are being generated in the background (log in as admin on the website to follow progress).' }
 } else {
     Write-Host 'Import failed - see log above.' -ForegroundColor Red
     exit 1

@@ -14,7 +14,7 @@ Grober Richtwert für ~1.000 Spiele (≈1.500 Tokens Eingabe + 400 Ausgabe pro S
 
 ## Einrichtung
 
-1. Seite öffnen → **✨ KI-Texte** → Update-Token eingeben.
+1. Seite öffnen → als Admin anmelden (`#login`, siehe README) → **✨ KI-Texte**.
 2. Tab **KI-Einstellungen** → Anbieter wählen.
 3. Ollama-URL bzw. API-Key eintragen → **Verbindung testen** (lädt die verfügbaren Modelle) → Modell wählen.
 4. Optional: Kreativität (Temperatur), Kontext (nur Ollama), Timeout, **parallele Anfragen** (Cloud: 3–4, Ollama: 1), Stil-Prompt.

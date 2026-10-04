@@ -19,6 +19,16 @@ Danach die Seite im Browser neu laden (`Strg+F5`). Spieldaten, KI-Texte und Eins
 
 > `SITE_ICON` sollte ein einzelnes Emoji sein. Sonderzeichen im Titel (`´`, `&`, `'`) sind erlaubt und werden korrekt maskiert.
 
+## App-Symbol (Home-Bildschirm)
+
+Standardmäßig erzeugt der Updater ein Gamepad-Symbol im Farbverlauf der Seite. Eigenes Symbol: quadratisches PNG (mind. 512×512 px, ohne Transparenz) als `icon.png` ins `data`-Volume kopieren und den Updater neu starten:
+
+```bash
+docker cp icon.png <updater-container>:/data/icon.png && docker restart <updater-container>
+```
+
+Auf bereits installierten Handys wird das neue Symbol erst nach erneutem Hinzufügen zum Home-Bildschirm übernommen. Der App-Name entspricht `SITE_TITLE` (über 15 Zeichen wird er unter dem Symbol gekürzt).
+
 ## Port
 
 `WEB_PORT=8095` in `.env` bzw. in den Stack-Variablen ändern und den Stack neu deployen.

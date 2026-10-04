@@ -18,7 +18,8 @@ Beispiel mit **Nginx Proxy Manager** (NPM) für `games.example.com`:
 
 ## Sicherheit
 
-- Lesen der Seite ist ohne Login möglich. Alle ändernden Funktionen (Import, KI-Erzeugung, KI-Einstellungen) erfordern das `UPDATE_TOKEN`.
+- Lesen der Seite ist ohne Login möglich. Import, KI-Erzeugung und KI-Einstellungen sind nur nach der Admin-Anmeldung (`ADMIN_PASSWORD`) bzw. für Skripte mit `UPDATE_TOKEN` erreichbar und für Besucher unsichtbar.
+- **HTTPS** ist Voraussetzung dafür, dass sich die Seite am Handy als App installieren lässt, und setzt das Login-Cookie automatisch auf `Secure`. Der Proxy sollte `X-Forwarded-Proto` weitergeben (NPM macht das automatisch).
 - Wer die Sammlung nicht öffentlich zeigen möchte: in NPM eine **Access List** (Basic Auth und/oder IP-Bereich) auf den Proxy Host legen, oder die Seite nur im LAN/VPN betreiben.
 - Ein langes, zufälliges Token verwenden (`openssl rand -base64 24`) und nicht ins Repo committen.
 

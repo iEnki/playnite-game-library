@@ -14,7 +14,7 @@ curl -fsS -X POST -H "X-Token: $TOKEN" -H "Content-Type: application/x-tar" --da
 echo "Processing ..."
 while :; do
   sleep 2
-  ST="$(curl -fsS "$URL/api/status")"
+  ST="$(curl -fsS -H "X-Token: $TOKEN" "$URL/api/status")"
   STATE="$(printf '%s' "$ST" | sed -n 's/^{"state": "\([a-z]*\)".*/\1/p')"
   case "$STATE" in running) printf '.';; done) echo; echo "Done."; exit 0;; *) echo; echo "Import failed:"; printf '%s\n' "$ST" | head -c 2000; exit 1;; esac
 done

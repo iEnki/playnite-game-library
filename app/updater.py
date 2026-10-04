@@ -6,7 +6,7 @@ optional AI "Good to Know" texts (Ollama / OpenAI / Claude) and swaps the result
 the web root served by nginx.
 
 Configuration via environment variables (see README / .env.example):
-  UPDATE_TOKEN, SITE_TITLE, SITE_ICON, OLLAMA_URL, OLLAMA_MODEL,
+  UPDATE_TOKEN, ADMIN_PASSWORD, SESSION_DAYS, SITE_TITLE, SITE_ICON, OLLAMA_URL, OLLAMA_MODEL,
   SITE_DIR (/site), DATA_DIR (/data), CONF_DIR (/conf)
 """
 import os, re, io, sys, json, time, glob, html, shutil, difflib, tarfile, zipfile, threading
@@ -25,6 +25,9 @@ SITE_ICON = os.environ.get('SITE_ICON', '').strip() or '🎮'
 CONF = os.environ.get('CONF_DIR', '/conf').rstrip('/')
 MAPPING = os.path.join(BACKUP, 'mapping.json')
 TOKEN = os.environ.get('UPDATE_TOKEN', '')
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', '') or TOKEN   # web login; falls back to UPDATE_TOKEN
+try: SESSION_DAYS = max(1, min(365, int(os.environ.get('SESSION_DAYS', '30'))))
+except ValueError: SESSION_DAYS = 30
 MAX_UPLOAD = 2 * 1024 ** 3
 UA = {'User-Agent': 'Mozilla/5.0 playnite-game-library-updater'}
 
@@ -47,12 +50,18 @@ server {
     location /api/ {
         set $up http://updater:8000;
         proxy_pass $up;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto;   # set by an outer HTTPS proxy (NPM)
         proxy_request_buffering off;
         proxy_read_timeout 900s;
         proxy_send_timeout 900s;
     }
     location = /index.html { add_header Cache-Control "no-cache"; }
     location = /games.json { add_header Cache-Control "no-cache"; }
+    location = /sw.js { add_header Cache-Control "no-cache"; add_header Service-Worker-Allowed "/"; }
+    location = /manifest.webmanifest { default_type application/manifest+json; add_header Cache-Control "no-cache"; }
     location ~* \.(jpg|jpeg|png|webp|gif)$ { expires 7d; access_log off; }
 }
 """
@@ -690,6 +699,87 @@ def ai_start(opts):
         finally: LOCK.release()
     threading.Thread(target=run, daemon=True).start()
 
+# ---------------------------------------------------------------- PWA (installable app)
+import zlib, struct, math
+SW_JS = r"""// Service worker: makes the library installable and usable offline (last loaded state).
+const V='gl-__VER__',IMG='gl-img';
+self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(V).then(c=>c.addAll(['./','games.json','manifest.webmanifest']).catch(()=>{})))});
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n!==V&&n!==IMG).map(n=>caches.delete(n)))).then(()=>self.clients.claim())));
+async function trim(c){const k=await c.keys();if(k.length>2500)for(const r of k.slice(0,k.length-2000))await c.delete(r)}
+self.addEventListener('fetch',e=>{
+  const r=e.request;if(r.method!=='GET')return;
+  const u=new URL(r.url);if(u.origin!==location.origin||u.pathname.includes('/api/'))return;
+  if(/\.(jpe?g|png|webp|gif)$/i.test(u.pathname)){
+    e.respondWith(caches.open(IMG).then(c=>c.match(r).then(m=>m||fetch(r).then(res=>{if(res.ok){c.put(r,res.clone()).then(()=>trim(c))}return res}))));return}
+  e.respondWith(fetch(r).then(res=>{if(res.ok){const cl=res.clone();caches.open(V).then(c=>c.put(r,cl))}return res})
+    .catch(()=>caches.match(r,{ignoreSearch:true}).then(m=>m||(r.mode==='navigate'?caches.match('./'):Response.error()))));
+});
+"""
+
+def _png(w, h, rows):
+    raw = b''.join(b'\x00' + bytes(r) for r in rows)
+    ch = lambda t, d: struct.pack('>I', len(d)) + t + d + struct.pack('>I', zlib.crc32(t + d) & 0xffffffff)
+    return b'\x89PNG\r\n\x1a\n' + ch(b'IHDR', struct.pack('>IIBBBBB', w, h, 8, 2, 0, 0, 0)) + ch(b'IDAT', zlib.compress(raw, 9)) + ch(b'IEND', b'')
+
+def _icon(size, scale=0.86):
+    """Gradient square with a white gamepad (signed distance fields, anti-aliased)."""
+    hyp = math.hypot
+    def rrect(x, y, cx, cy, hw, hh, r):
+        qx, qy = abs(x - cx) - hw + r, abs(y - cy) - hh + r
+        return hyp(max(qx, 0), max(qy, 0)) + min(max(qx, qy), 0) - r
+    def smin(a, b, k=0.05):
+        h = max(k - abs(a - b), 0) / k
+        return min(a, b) - h * h * k / 4
+    btn = ((0.665, 0.425), (0.665, 0.555), (0.60, 0.49), (0.73, 0.49))
+    def glyph(x, y):
+        x, y = 0.5 + (x - 0.5) / scale, 0.5 + (y - 0.5) / scale
+        body = smin(smin(rrect(x, y, 0.5, 0.46, 0.31, 0.13, 0.12), hyp(x - 0.285, y - 0.585) - 0.11), hyp(x - 0.715, y - 0.585) - 0.11)
+        dpad = min(rrect(x, y, 0.335, 0.49, 0.075, 0.024, 0.01), rrect(x, y, 0.335, 0.49, 0.024, 0.075, 0.01))
+        bt = min(hyp(x - bx, y - by) - 0.029 for bx, by in btn)
+        return max(body, -dpad, -bt) * scale
+    c1, c2 = (0x7c, 0x5c, 0xff), (0x22, 0xd3, 0xee)
+    rows = []
+    for j in range(size):
+        y = (j + 0.5) / size; row = []
+        for i in range(size):
+            x = (i + 0.5) / size
+            t = min(1, max(0, (x + y) / 2)); bg = [c1[k] + (c2[k] - c1[k]) * t for k in range(3)]
+            d = glyph(x, y)
+            a = 1.0 if d < -2 / size else 0.0 if d > 2 / size else min(1, max(0, 0.5 - d * size))
+            row += [int(bg[k] + (255 - bg[k]) * a + 0.5) for k in range(3)]
+        rows.append(row)
+    return _png(size, size, rows)
+
+def _png_size(b):
+    return struct.unpack('>II', b[16:24]) if b[:8] == b'\x89PNG\r\n\x1a\n' else (512, 512)
+
+def write_pwa(dst):
+    """manifest.webmanifest, service worker and home-screen icons next to index.html."""
+    custom = os.path.join(BACKUP, 'icon.png')                     # optional own icon (square PNG, >=512px)
+    cache = os.path.join(BACKUP, 'pwa'); os.makedirs(cache, exist_ok=True)
+    names = {'app-icon-192.png': 192, 'app-icon-512.png': 512, 'apple-touch-icon.png': 180}
+    for n, sz in names.items():
+        out = os.path.join(dst, n)
+        if os.path.exists(custom):
+            shutil.copyfile(custom, out); continue
+        c = os.path.join(cache, f'v1-{n}')
+        if not os.path.exists(c):
+            with open(c + '.tmp', 'wb') as f: f.write(_icon(sz))
+            os.replace(c + '.tmp', c)
+        shutil.copyfile(c, out)
+    if os.path.exists(custom):
+        w, h = _png_size(open(custom, 'rb').read(32)); icons = [{'src': 'app-icon-512.png', 'sizes': f'{w}x{h}', 'type': 'image/png', 'purpose': 'any'}]
+    else:
+        icons = [{'src': 'app-icon-192.png', 'sizes': '192x192', 'type': 'image/png', 'purpose': 'any'},
+                 {'src': 'app-icon-512.png', 'sizes': '512x512', 'type': 'image/png', 'purpose': 'any'},
+                 {'src': 'app-icon-512.png', 'sizes': '512x512', 'type': 'image/png', 'purpose': 'maskable'}]
+    short = SITE_TITLE if len(SITE_TITLE) <= 15 else SITE_TITLE[:14].rstrip() + '…'
+    man = {'name': SITE_TITLE, 'short_name': short, 'description': 'Spielebibliothek', 'lang': 'de',
+           'id': './', 'start_url': './', 'scope': './', 'display': 'standalone', 'orientation': 'any',
+           'background_color': '#0d0f14', 'theme_color': '#0d0f14', 'icons': icons}
+    with open(os.path.join(dst, 'manifest.webmanifest'), 'w', encoding='utf-8') as f: json.dump(man, f, ensure_ascii=False, indent=1)
+    with open(os.path.join(dst, 'sw.js'), 'w', encoding='utf-8') as f: f.write(SW_JS.replace('__VER__', str(int(time.time()))))
+
 # ---------------------------------------------------------------- app page
 def render_app(dst):
     """Write the single-page app with the configured title/icon to dst."""
@@ -698,6 +788,8 @@ def render_app(dst):
     tmp = os.path.join(os.path.dirname(dst), '.index.tmp')
     with open(tmp, 'w', encoding='utf-8') as f: f.write(s)
     os.replace(tmp, dst)
+    try: write_pwa(os.path.dirname(dst))
+    except Exception as e: print('PWA-Dateien fehlgeschlagen:', e, flush=True)
 
 def init_site():
     """First start: empty library with import button. Later starts: refresh title/icon/app version."""
@@ -787,16 +879,97 @@ def start_job(archive):
     STATE.update(state='running', log=[], started=time.time(), finished=None, summary=None)
     threading.Thread(target=run_import, args=(archive,), daemon=True).start()
 
+# ---------------------------------------------------------------- admin login
+import base64, hashlib, secrets
+COOKIE = 'gl_admin'
+_FAILS = {}            # ip -> [timestamps of failed logins]
+_FAIL_LOCK = threading.Lock()
+
+def _session_key():
+    """Secret for signing session cookies. Persisted in the data volume; mixed with the
+    password so that changing ADMIN_PASSWORD logs out every session."""
+    p = os.path.join(BACKUP, 'session_secret')
+    try:
+        sec = open(p, 'rb').read()
+        if len(sec) < 32: raise ValueError
+    except Exception:
+        os.makedirs(BACKUP, exist_ok=True)
+        sec = secrets.token_bytes(48)
+        fd = os.open(p, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, 'wb') as f: f.write(sec)
+    return hmac.new(sec, ('pw:' + ADMIN_PASSWORD).encode(), hashlib.sha256).digest()
+
+def make_session(days):
+    exp = int(time.time() + days * 86400)
+    nonce = secrets.token_hex(8)
+    msg = f'{exp}.{nonce}'
+    sig = hmac.new(_session_key(), msg.encode(), hashlib.sha256).hexdigest()
+    return f'{msg}.{sig}', exp
+
+def check_session(value):
+    try:
+        exp, nonce, sig = value.split('.')
+        good = hmac.new(_session_key(), f'{exp}.{nonce}'.encode(), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(sig, good) and int(exp) > time.time()
+    except Exception:
+        return False
+
+def check_password(pw):
+    if not ADMIN_PASSWORD: return False
+    a = hashlib.sha256(pw.encode()).digest(); b = hashlib.sha256(ADMIN_PASSWORD.encode()).digest()
+    return hmac.compare_digest(a, b)
+
+def login_blocked(ip):
+    now = time.time()
+    with _FAIL_LOCK:
+        lst = [t for t in _FAILS.get(ip, []) if now - t < 900]
+        _FAILS[ip] = lst
+        return len(lst) >= 5
+
+def login_failed(ip):
+    with _FAIL_LOCK: _FAILS.setdefault(ip, []).append(time.time())
+
 # ---------------------------------------------------------------- http
 class H(BaseHTTPRequestHandler):
-    def _json(self, code, obj):
+    def _json(self, code, obj, cookie=None):
         b = json.dumps(obj, ensure_ascii=False).encode()
         self.send_response(code); self.send_header('Content-Type', 'application/json; charset=utf-8')
         self.send_header('Cache-Control', 'no-store'); self.send_header('Content-Length', str(len(b)))
+        if cookie: self.send_header('Set-Cookie', cookie)
         self.end_headers(); self.wfile.write(b)
 
-    def _authed(self):
+    def _ip(self):
+        # nginx appends the address of the outer proxy last; the entry before it was added by that proxy
+        xff = [x.strip() for x in self.headers.get('X-Forwarded-For', '').split(',') if x.strip()]
+        return (xff[-2] if len(xff) >= 2 else xff[0] if xff else '') or self.headers.get('X-Real-IP', '') or self.client_address[0]
+
+    def _cookie(self, name):
+        for part in (self.headers.get('Cookie') or '').split(';'):
+            k, _, v = part.strip().partition('=')
+            if k == name: return v
+        return ''
+
+    def _token_ok(self):
         return bool(TOKEN) and hmac.compare_digest(self.headers.get('X-Token', ''), TOKEN)
+
+    def _session_ok(self):
+        v = self._cookie(COOKIE)
+        return bool(v) and check_session(v)
+
+    def _same_origin(self):
+        origin = self.headers.get('Origin')
+        if not origin: return True                      # same-origin GET/old browsers; SameSite=Strict covers CSRF
+        host = (self.headers.get('X-Forwarded-Host') or self.headers.get('Host') or '').split(',')[0].strip()
+        return urllib.parse.urlparse(origin).netloc == host
+
+    def _authed(self, write=False):
+        """Admin = valid session cookie (web UI) or X-Token header (update scripts)."""
+        if self._token_ok(): return True
+        return self._session_ok() and (not write or self._same_origin())
+
+    def _set_cookie(self, value, max_age):
+        secure = '; Secure' if (self.headers.get('X-Forwarded-Proto', '').split(',')[0].strip() == 'https') else ''
+        return f'{COOKIE}={value}; Path=/; Max-Age={max_age}; HttpOnly; SameSite=Strict{secure}'
 
     def _body(self):
         n = int(self.headers.get('Content-Length') or 0)
@@ -805,9 +978,15 @@ class H(BaseHTTPRequestHandler):
 
     def do_GET(self):
         p = urllib.parse.urlparse(self.path).path
+        if p == '/api/session':
+            return self._json(200, {'admin': self._authed(), 'login': bool(ADMIN_PASSWORD)})
         if p == '/api/status':
+            if not self._authed():                      # visitors only learn whether an import is running
+                return self._json(200, {'state': STATE['state'], 'admin': False})
             job = {k: v for k, v in AI_JOB.items() if k != 'stop'}; job['log'] = AI_JOB['log'][-150:]
-            return self._json(200, {**STATE, 'log': STATE['log'][-200:], 'auth': bool(TOKEN), 'ai': job})
+            return self._json(200, {**STATE, 'log': STATE['log'][-200:], 'auth': bool(TOKEN), 'admin': True, 'ai': job})
+        if p.startswith('/api/ai/') and not self._authed():
+            return self._json(401, {'error': 'Nicht angemeldet'})
         if p == '/api/ai/config':
             return self._json(200, {'config': ai_cfg_public(ai_cfg()), 'default_system': AI_SYSTEM, 'defaults': ai_cfg_public(AI_DEFAULTS)})
         if p == '/api/ai/overview':
@@ -816,8 +995,24 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):
         p = urllib.parse.urlparse(self.path).path
+        if p == '/api/login':
+            ip = self._ip()
+            if not self._same_origin(): return self._json(403, {'error': 'Ungültige Herkunft'})
+            if login_blocked(ip): return self._json(429, {'error': 'Zu viele Fehlversuche – bitte 15 Minuten warten'})
+            try: body = self._body()
+            except Exception: body = {}
+            if not check_password(str(body.get('password') or '')):
+                login_failed(ip); time.sleep(1)
+                print(f'login failed from {ip}', flush=True)
+                return self._json(401, {'error': 'Passwort falsch'})
+            days = SESSION_DAYS if body.get('remember') else 1
+            val, _ = make_session(days)
+            print(f'login ok from {ip}', flush=True)
+            return self._json(200, {'admin': True}, cookie=self._set_cookie(val, days * 86400))
+        if p == '/api/logout':
+            return self._json(200, {'admin': False}, cookie=self._set_cookie('', 0))
         if p.startswith('/api/ai/'):
-            if not self._authed(): return self._json(401, {'error': 'Token ungültig'})
+            if not self._authed(write=True): return self._json(401, {'error': 'Nicht angemeldet'})
             try: body = self._body()
             except Exception as e: return self._json(400, {'error': str(e)})
             if p == '/api/ai/config':
@@ -849,8 +1044,8 @@ class H(BaseHTTPRequestHandler):
                 return self._json(200, {'ok': True})
             return self._json(404, {'error': 'not found'})
         if not p.startswith('/api/import'): return self._json(404, {'error': 'not found'})
-        if not self._authed():
-            return self._json(401, {'error': 'Token ungültig'})
+        if not self._authed(write=True):
+            return self._json(401, {'error': 'Nicht angemeldet oder Token ungültig'})
         length = int(self.headers.get('Content-Length') or 0)
         if not length: return self._json(411, {'error': 'Content-Length fehlt'})
         if length > MAX_UPLOAD: return self._json(413, {'error': 'Upload zu groß'})
@@ -895,5 +1090,6 @@ if __name__ == '__main__':
         lim = int(sys.argv[sys.argv.index('--limit') + 1]) if '--limit' in sys.argv else 0
         LOCK.acquire(); ai_run(SITE, {'scope': 'all', 'mode': 'missing', 'limit': lim, 'nosteam': '--nosteam' in sys.argv}); sys.exit(0)
     init_site()
-    print('updater listening on :8000, token set:', bool(TOKEN), flush=True)
+    _session_key()
+    print('updater listening on :8000, token set:', bool(TOKEN), '| admin login:', 'ADMIN_PASSWORD' if os.environ.get('ADMIN_PASSWORD') else ('UPDATE_TOKEN' if TOKEN else 'disabled'), flush=True)
     ThreadingHTTPServer(('0.0.0.0', 8000), H).serve_forever()

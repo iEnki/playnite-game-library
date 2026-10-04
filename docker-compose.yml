@@ -22,6 +22,8 @@ services:
     restart: unless-stopped
     environment:
       UPDATE_TOKEN: ${UPDATE_TOKEN:?set UPDATE_TOKEN (long random string)}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      SESSION_DAYS: ${SESSION_DAYS:-30}
       SITE_TITLE: ${SITE_TITLE:-My Game Library}
       SITE_ICON: ${SITE_ICON:-🎮}
       OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}

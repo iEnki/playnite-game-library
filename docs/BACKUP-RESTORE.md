@@ -10,7 +10,7 @@
 
 \* `<stack>` = Name des Portainer-Stacks bzw. des Compose-Projekts (Ordnername). Anzeigen: `docker volume ls | grep _data`
 
-Zusätzlich sichern: deine Stack-Variablen (`.env` bzw. Portainer-Environment) – vor allem `UPDATE_TOKEN`.
+Zusätzlich sichern: deine Stack-Variablen (`.env` bzw. Portainer-Environment) – vor allem `UPDATE_TOKEN` und `ADMIN_PASSWORD`. Ein eigenes App-Symbol (`icon.png`) liegt ebenfalls im `data`-Volume.
 
 ## Backup erstellen
 
@@ -25,7 +25,7 @@ Tipp: In Proxmox sichert ein Backup des LXC/VM-Containers (vzdump) die Docker-Vo
 
 ## Neuinstallation (neuer Server / Neuaufsetzen)
 
-1. Stack aus diesem Repo neu anlegen (siehe [README → Installation](../README.md#installation-mit-portainer)) – **gleiches `UPDATE_TOKEN`** und gleicher `SITE_TITLE` wie vorher.
+1. Stack aus diesem Repo neu anlegen (siehe [README → Installation](../README.md#installation-mit-portainer)) – **gleiches `UPDATE_TOKEN`/`ADMIN_PASSWORD`** und gleicher `SITE_TITLE` wie vorher.
 2. Stack einmal starten, damit die Volumes angelegt werden, dann den Updater stoppen:
    ```bash
    docker stop $(docker ps -qf "name=updater")
