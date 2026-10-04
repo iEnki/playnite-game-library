@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>__SITE_TITLE__</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="web-icon.png">
+<meta name="theme-color" content="#0d0f14">
+<style>
+:root{
+  --bg:#0d0f14; --bg2:#141821; --panel:#191e29; --panel2:#202636; --line:#2a3142;
+  --text:#e8ebf2; --muted:#9aa3b5; --dim:#6b7489; --accent:#7c5cff; --accent2:#22d3ee;
+  --ok:#34d399; --warn:#fbbf24; --radius:14px; --side:270px;
+  --card:168px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Inter,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#2b3245;border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+
+/* header */
+header{position:sticky;top:0;z-index:30;background:rgba(13,15,20,.82);backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid var(--line)}
+.hrow{display:flex;align-items:center;gap:16px;padding:12px 20px;max-width:1800px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;font-size:19px;letter-spacing:.2px;white-space:nowrap;text-decoration:none}
+.brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-size:17px;box-shadow:0 6px 20px -6px var(--accent)}
+.search{flex:1;max-width:620px;position:relative}
+.search input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 40px 10px 40px;outline:none;transition:.15s}
+.search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,255,.25)}
+.search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.6}
+.search kbd{position:absolute;right:10px;top:50%;transform:translateY(-50%);font:12px ui-monospace,monospace;color:var(--dim);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+.stats{display:flex;gap:18px;color:var(--muted);font-size:13px;white-space:nowrap}
+.stats b{color:var(--text);font-weight:650}
+.iconbtn{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer}
+
+/* layout */
+.wrap{display:grid;grid-template-columns:var(--side) 1fr;max-width:1800px;margin:0 auto}
+aside{position:sticky;top:63px;height:calc(100vh - 63px);overflow:auto;padding:18px 14px 40px 20px;border-right:1px solid var(--line)}
+main{padding:16px 22px 60px;min-width:0}
+.fgroup{margin-bottom:18px}
+.fgroup h4{margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none}
+.fgroup h4 span{font-size:12px;transition:.2s}
+.fgroup.closed h4 span{transform:rotate(-90deg)}
+.fgroup.closed .opts{display:none}
+.opt{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:9px;cursor:pointer;color:var(--muted);font-size:14px;user-select:none}
+.opt:hover{background:var(--panel);color:var(--text)}
+.opt.on{background:rgba(124,92,255,.16);color:var(--text)}
+.opt .dot{width:9px;height:9px;border-radius:50%;flex:none}
+.opt .n{margin-left:auto;font-size:12px;color:var(--dim)}
+.opt .box{width:16px;height:16px;border-radius:5px;border:1.5px solid #3a4258;flex:none;display:grid;place-items:center}
+.opt.on .box{background:var(--accent);border-color:var(--accent)}
+.opt.on .box:after{content:"";width:8px;height:4px;border:2px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.more{font-size:13px;color:var(--accent);background:none;border:0;padding:4px 8px;cursor:pointer}
+
+/* toolbar */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
+.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px;overflow:auto;max-width:100%}
+.seg button{background:none;border:0;padding:7px 12px;border-radius:8px;cursor:pointer;color:var(--muted);white-space:nowrap;font-size:14px}
+.seg button.on{background:var(--panel2);color:var(--text);box-shadow:0 1px 0 rgba(255,255,255,.04) inset}
+.sel{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:8px 12px;cursor:pointer}
+.spacer{flex:1}
+.count{color:var(--muted);font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 6px 4px 12px;font-size:13px}
+.chip button{background:#2c3448;border:0;border-radius:50%;width:20px;height:20px;cursor:pointer;line-height:1}
+.chip.clear{background:none;border-color:transparent;color:var(--accent);cursor:pointer;padding:4px 8px}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--card),1fr));gap:18px}
+.card{position:relative;border-radius:12px;overflow:hidden;background:var(--panel);aspect-ratio:2/3;cursor:pointer;outline:none;transform:translateZ(0);transition:transform .2s,box-shadow .2s;box-shadow:0 8px 24px -14px #000;content-visibility:auto;contain-intrinsic-size:168px 252px}
+.card:hover,.card:focus-visible{transform:translateY(-4px);box-shadow:0 18px 40px -16px #000,0 0 0 2px var(--accent)}
+.card img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .35s}
+.card img.ld{opacity:1}
+.card .ph{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:14px;text-align:center;font-weight:700;font-size:16px;line-height:1.2;color:#fff}
+.card .ph i{font-style:normal;font-size:44px;opacity:.85;margin-bottom:28px;font-weight:800;letter-spacing:-1px}
+.card .meta{position:absolute;left:0;right:0;bottom:0;padding:34px 10px 9px;background:linear-gradient(transparent,rgba(5,6,10,.92) 55%);font-size:13px;font-weight:600;line-height:1.25}
+.card .meta small{display:flex;gap:8px;font-weight:500;color:#b7bfd0;font-size:11.5px;margin-top:3px}
+.badges{position:absolute;top:8px;left:8px;right:8px;display:flex;gap:5px;justify-content:space-between}
+.badge{font-size:10.5px;font-weight:700;padding:3px 7px;border-radius:6px;background:rgba(10,12,18,.78);backdrop-filter:blur(6px);letter-spacing:.02em}
+.badge.inst{background:rgba(52,211,153,.9);color:#05140e}
+/* list view */
+.grid.list{grid-template-columns:1fr;gap:6px}
+.grid.list .card{aspect-ratio:auto;display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:14px;padding:6px 14px 6px 6px;height:68px;contain-intrinsic-size:auto 68px}
+.grid.list .card:hover{transform:none}
+.grid.list .card .thumb{width:44px;height:56px;border-radius:7px;overflow:hidden;position:relative;background:var(--panel2)}
+.grid.list .card .thumb .ph{font-size:0}.grid.list .card .thumb .ph i{font-size:15px;margin:0}
+.grid.list .card .meta{position:static;background:none;padding:0;font-size:14.5px}
+.grid.list .badges{position:static;justify-content:flex-end}
+.grid:not(.list) .thumb{position:absolute;inset:0}
+.empty{padding:80px 20px;text-align:center;color:var(--muted)}
+.empty b{display:block;font-size:20px;color:var(--text);margin-bottom:6px}
+
+/* detail */
+.ovl{position:fixed;inset:0;z-index:50;background:rgba(4,5,8,.72);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;overflow:auto;padding:40px 16px}
+.ovl.open{display:flex}
+.dlg{width:min(1060px,100%);background:var(--bg2);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:0 40px 120px -30px #000;animation:pop .22s ease-out}
+@keyframes pop{from{transform:translateY(14px);opacity:0}}
+.hero{position:relative;height:260px;background:#000 center/cover no-repeat}
+.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,24,33,.1),var(--bg2) 96%)}
+.dclose,.dnav{position:absolute;z-index:2;top:14px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(10,12,18,.7);cursor:pointer;font-size:18px}
+.dclose{right:14px}.dnav.prev{right:104px}.dnav.next{right:58px}
+.dbody{display:grid;grid-template-columns:230px 1fr;gap:28px;padding:0 28px 28px;margin-top:-150px;position:relative;z-index:1}
+.dcover{width:230px;aspect-ratio:2/3;border-radius:14px;overflow:hidden;background:var(--panel);box-shadow:0 20px 50px -20px #000;position:relative}
+.dcover img{width:100%;height:100%;object-fit:cover}
+.dtitle{font-size:32px;font-weight:800;line-height:1.1;margin:70px 0 10px;letter-spacing:-.4px}
+.dsub{color:var(--muted);margin-bottom:16px}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 18px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 14px;min-width:110px}
+.kpi small{display:block;color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+.kpi b{font-size:17px}
+.score{display:flex;align-items:center;gap:10px}
+.ring{--v:0;width:42px;height:42px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--v)*1%),#2a3142 0);display:grid;place-items:center;font-size:13px;font-weight:700}
+.ring span{width:34px;height:34px;border-radius:50%;background:var(--panel);display:grid;place-items:center}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin:4px 0 14px}
+.tag{background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:4px 11px;font-size:13px;cursor:pointer;color:var(--muted)}
+.tag:hover{color:var(--text);border-color:var(--accent)}
+.dsec h5{margin:18px 0 6px;font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--dim)}
+.desc{color:#c9cfdb;max-width:75ch}
+.desc img{max-width:100%;height:auto;border-radius:8px}
+.links{display:flex;flex-wrap:wrap;gap:8px}
+.links a{text-decoration:none;background:var(--panel);border:1px solid var(--line);padding:6px 12px;border-radius:9px;font-size:13px}
+.links a:hover{border-color:var(--accent2)}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px 18px;font-size:14px}
+.facts div{padding:6px 0;border-bottom:1px solid var(--line)}
+.facts small{display:block;color:var(--dim);font-size:11.5px}
+.backtop{position:fixed;right:20px;bottom:20px;z-index:20;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);cursor:pointer;opacity:0;pointer-events:none;transition:.2s}
+.backtop.show{opacity:1;pointer-events:auto}
+.foot{color:var(--dim);font-size:12.5px;text-align:center;margin-top:40px}
+.foot a{color:var(--muted)}
+
+@media (max-width:980px){
+  :root{--card:132px}
+  .wrap{grid-template-columns:1fr}
+  aside{position:fixed;left:0;top:0;bottom:0;height:auto;width:min(320px,86vw);z-index:60;background:var(--bg2);transform:translateX(-102%);transition:transform .25s;padding-top:20px}
+  aside.open{transform:none;box-shadow:30px 0 80px #000}
+  .iconbtn{display:inline-block}
+  .stats{display:none}
+  .hrow{padding:10px 14px;gap:10px}
+  .brand span.t{display:none}
+  main{padding:12px 14px 60px}
+  .search kbd{display:none}
+  .grid{gap:12px}
+  .dbody{grid-template-columns:1fr;margin-top:-120px;padding:0 18px 22px}
+  .dcover{width:150px}
+  .dtitle{margin-top:4px;font-size:25px}
+  .hero{height:200px}
+  .ovl{padding:0}
+  .dlg{border-radius:0;min-height:100%}
+  .toolbar{gap:8px}.count{display:none}.sel{flex:1;min-width:0}#quick{width:100%}
+}
+.btn{display:inline-flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;white-space:nowrap;font-size:14px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.btn[disabled]{opacity:.5;cursor:default}
+#impBtn{margin-left:auto}
+.imp{width:min(620px,100%);background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:24px;margin:auto;animation:pop .2s ease-out}
+.imp h2{margin:0 0 6px;font-size:21px}
+.imp p{color:var(--muted);margin:0 0 16px;font-size:14px}
+.imp label{display:block;font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin:0 0 6px}
+.imp input[type=password]{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:16px;outline:none}
+.imp input[type=password]:focus{border-color:var(--accent)}
+.drop{border:2px dashed #39415a;border-radius:14px;padding:22px;text-align:center;color:var(--muted);margin-bottom:14px;transition:.15s}
+.drop.over{border-color:var(--accent);background:rgba(124,92,255,.08)}
+.drop .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.bar{height:8px;background:var(--panel);border-radius:8px;overflow:hidden;margin:12px 0 8px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .2s}
+.ilog{background:#0a0c11;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:12px/1.5 ui-monospace,Consolas,monospace;color:#b9c1d3;max-height:220px;overflow:auto;white-space:pre-wrap;margin:0}
+.ifoot{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+@media (max-width:980px){#impBtn span{display:none}}
+.dleft{display:flex;flex-direction:column;gap:14px;min-width:0}
+.dsec{min-width:0}
+.dcover .ph{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:14px;text-align:center;font-weight:700;font-size:18px;line-height:1.2;color:#fff}
+.dcover .ph i{font-style:normal;font-size:52px;opacity:.85;margin-bottom:16px;font-weight:800}
+.btn.wide{justify-content:center;text-decoration:none}
+.facts.side{grid-template-columns:1fr;gap:0;font-size:13.5px}
+.lead{font-size:16px;color:#d5dae5;margin:0 0 14px;max-width:75ch}
+.muted{color:var(--muted);font-size:14px}
+.media{margin:6px 0 4px}
+.stage{aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;display:grid;place-items:center}
+.stage video,.stage img{width:100%;height:100%;object-fit:contain;display:block}
+.stage img{cursor:zoom-in}
+.thumbs{display:flex;gap:8px;overflow-x:auto;padding:8px 0 4px;scroll-snap-type:x mandatory}
+.th{flex:none;width:118px;aspect-ratio:16/9;border-radius:8px;overflow:hidden;border:2px solid transparent;padding:0;background:#000;cursor:pointer;position:relative;scroll-snap-align:start;opacity:.7}
+.th.on,.th:hover{border-color:var(--accent);opacity:1}
+.th img{width:100%;height:100%;object-fit:cover;display:block}
+.th span{position:absolute;inset:0;display:grid;place-items:center;font-size:22px;text-shadow:0 2px 8px #000}
+.desc.clamp{max-height:260px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 70%,transparent)}
+.desc h2{font-size:17px;margin:16px 0 6px}.desc ul{padding-left:20px}
+.reqs{display:grid;grid-template-columns:1fr 1fr;gap:18px;font-size:13px;color:#c2c9d6}
+.reqs ul{list-style:none;padding:0;margin:0}.reqs li{margin:3px 0}
+.skel{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--panel),var(--panel2),var(--panel));background-size:200% 100%;animation:sk 1.2s infinite;margin:10px 0;max-width:620px}
+.skel.s2{width:70%;height:180px}
+@keyframes sk{to{background-position:-200% 0}}
+.lb{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.92);display:none;place-items:center;cursor:zoom-out;padding:20px}
+.lb.open{display:grid}.lb img{max-width:100%;max-height:100%;border-radius:8px}
+@media (max-width:980px){.reqs{grid-template-columns:1fr}.dleft{order:2}.dsec{order:1}.dleft .dcover{display:none}.facts.side{grid-template-columns:1fr 1fr;column-gap:14px}.dtitle{margin-top:60px}.kpi{min-width:0}}
+.ai.clamp{max-height:230px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 65%,transparent)}
+.ai{background:linear-gradient(180deg,rgba(124,92,255,.07),transparent);border:1px solid var(--line);border-radius:14px;padding:16px 18px;max-width:80ch}
+.ai p{margin:0 0 10px;color:#d3d8e3}
+.ai .ai-pitch{font-size:16px;color:#eef1f7;font-weight:500}
+.ai h6{margin:14px 0 6px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent2)}
+.ai-list{margin:0;padding:0;list-style:none}
+.ai-list li{position:relative;padding:3px 0 3px 22px;color:#d3d8e3}
+.ai-list.good li:before{content:"✓";position:absolute;left:2px;color:var(--ok);font-weight:700}
+.ai-list.warn li:before{content:"!";position:absolute;left:6px;color:var(--warn);font-weight:800}
+.ai .ai-for{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+.ai .ai-for b{color:var(--text)}
+details.orig{margin-top:10px}
+details.orig summary{cursor:pointer;color:var(--accent);font-size:14px;padding:6px 0}
+details.orig .desc{margin-top:8px}
+.gtk-btn{display:flex;align-items:center;gap:14px;width:100%;max-width:620px;margin:4px 0 16px;padding:12px 16px;border-radius:14px;cursor:pointer;text-align:left;border:1px solid transparent;
+  background:linear-gradient(var(--bg2),var(--bg2)) padding-box,linear-gradient(120deg,var(--accent),var(--accent2),#f472b6) border-box;box-shadow:0 8px 30px -14px var(--accent);transition:transform .15s,box-shadow .15s}
+.gtk-btn:hover{transform:translateY(-2px);box-shadow:0 14px 36px -12px var(--accent)}
+.gtk-ico{font-size:24px;width:42px;height:42px;display:grid;place-items:center;border-radius:11px;background:linear-gradient(135deg,rgba(124,92,255,.35),rgba(34,211,238,.25));flex:none}
+.gtk-txt{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.gtk-txt b{font-size:16px;letter-spacing:.2px;background:linear-gradient(90deg,#fff,#c4b5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gtk-txt small{color:var(--muted);font-size:12.5px}
+.gtk-badge{font-size:10.5px;font-weight:800;letter-spacing:.08em;padding:3px 7px;border-radius:6px;background:rgba(124,92,255,.22);color:#c4b5fd;border:1px solid rgba(124,92,255,.45)}
+.gtk-arrow{font-size:22px;color:var(--muted)}
+.gtk-ovl{position:fixed;inset:0;z-index:70;background:rgba(4,5,8,.55);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .2s}
+.gtk-ovl.open{opacity:1;pointer-events:auto}
+.gtk-panel{position:absolute;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--bg2);border-left:1px solid var(--line);box-shadow:-30px 0 80px -20px #000;padding:22px 24px 30px;overflow:auto;transform:translateX(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
+.gtk-ovl.open .gtk-panel{transform:none}
+.gtk-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.gtk-head small{color:var(--accent2);font-size:11.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+.gtk-head h3{margin:4px 0 0;font-size:22px}
+.gtk-x{background:var(--panel);border:1px solid var(--line);border-radius:50%;width:36px;height:36px;cursor:pointer;flex:none}
+.gtk-panel p{color:#d3d8e3;margin:0 0 10px}
+.gtk-panel .ai-pitch{font-size:16.5px;color:#eef1f7;font-weight:500}
+.gtk-panel h6{margin:18px 0 6px;font-size:13px;color:var(--text)}
+.gtk-panel .ai-for{margin-top:18px;padding:12px 14px;border-radius:12px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.25);color:#d3d8e3}
+.gtk-note{margin-top:20px!important;font-size:12px;color:var(--dim)!important}
+@media (max-width:980px){.gtk-panel{top:auto;left:0;width:100%;max-height:85vh;border-left:0;border-top:1px solid var(--line);border-radius:18px 18px 0 0;transform:translateY(100%)}.gtk-txt small{display:none}}
+.dtop{display:flex;gap:14px;align-items:flex-end}.mcov{display:none}
+.mfilter{display:none;position:relative}
+.fbadge{margin-left:6px;background:var(--accent);color:#fff;border-radius:999px;font-size:11px;padding:1px 7px;font-weight:700}
+.sheet-foot{display:none}
+@media (hover:none){.card:hover{transform:none;box-shadow:0 8px 24px -14px #000}.gtk-btn:hover{transform:none}}
+@media (max-width:760px){
+  :root{--card:104px}
+  html,body{font-size:14.5px}
+  header{padding-top:env(safe-area-inset-top)}
+  .hrow{padding:8px 12px;gap:8px}
+  #menuBtn,#impBtn{display:none!important}
+  .brand .logo{width:32px;height:32px;font-size:16px}
+  .search input{padding:9px 12px 9px 36px;font-size:16px;border-radius:11px}
+  main{padding:10px 12px calc(70px + env(safe-area-inset-bottom))}
+  .toolbar{display:grid;grid-template-columns:auto 1fr auto;gap:8px;margin-bottom:10px}
+  #quick{grid-column:1/-1;order:-1;background:none;border:0;padding:0;gap:6px;scrollbar-width:none;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent)}
+  #quick::-webkit-scrollbar{display:none}
+  #quick button{border:1px solid var(--line);border-radius:999px;padding:7px 14px;background:var(--panel);font-size:13.5px}
+  #quick button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .spacer,.count{display:none}
+  .mfilter{display:inline-flex;padding:9px 14px}
+  .sel{width:100%;padding:9px 10px;font-size:14px}
+  #view button{padding:7px 11px}
+  .chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-bottom:10px}.chip{flex:none}
+  .grid{gap:10px}
+  .card{border-radius:10px;contain-intrinsic-size:104px 156px}
+  .card .meta{padding:22px 7px 6px;font-size:11.5px;line-height:1.2}
+  .card .meta small{font-size:10px}
+  .badges{top:5px;left:5px;right:5px}.badge{font-size:8.5px;padding:2px 5px;border-radius:5px}
+  .card .ph i{font-size:30px;margin-bottom:18px}
+  .grid.list .card{height:60px;grid-template-columns:40px 1fr auto;gap:10px}
+  .grid.list .card .thumb{width:40px;height:52px}
+  .grid.list .badges .badge:first-child{display:none}
+  /* Filter als Bottom-Sheet */
+  aside{top:auto!important;left:0;right:0;bottom:0;width:100%!important;height:82vh!important;border-radius:18px 18px 0 0;border:0;border-top:1px solid var(--line);transform:translateY(102%)!important;padding:18px 18px 90px!important}
+  aside.open{transform:none!important}
+  aside:before{content:"";display:block;width:42px;height:5px;border-radius:3px;background:#3a4258;margin:-6px auto 14px}
+  .opt{padding:9px 8px;font-size:15px}
+  .sheet-foot{position:fixed;left:0;right:0;bottom:0;z-index:61;display:flex;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--bg2);border-top:1px solid var(--line);transform:translateY(110%);transition:transform .25s}
+  .sheet-foot.open{transform:none}.sheet-foot .btn{flex:1;justify-content:center;padding:12px}
+  .backtop{bottom:calc(16px + env(safe-area-inset-bottom));right:14px}
+  /* Detail */
+  .ovl{padding:0}
+  .dlg{border:0;border-radius:0;min-height:100%;animation:slideup .25s ease-out}
+  @keyframes slideup{from{transform:translateY(30px);opacity:0}}
+  .hero{height:190px}
+  .dclose,.dnav{position:fixed;top:calc(10px + env(safe-area-inset-top));width:40px;height:40px;background:rgba(10,12,18,.75);backdrop-filter:blur(8px);z-index:5}
+  .dclose{right:12px}.dnav.next{right:58px}.dnav.prev{right:104px}
+  .dbody{grid-template-columns:1fr;gap:18px;margin-top:-110px;padding:0 14px calc(28px + env(safe-area-inset-bottom));background:linear-gradient(transparent 0,var(--bg2) 110px)}
+  .dtop{margin-top:0}
+  .mcov{display:block;flex:none;width:92px;aspect-ratio:2/3;border-radius:10px;overflow:hidden;box-shadow:0 12px 30px -10px #000;background:var(--panel)}
+  .mcov img{width:100%;height:100%;object-fit:cover}
+  .dtitle{margin:0 0 4px!important;font-size:22px!important}
+  .dsub{margin-bottom:0;font-size:13px}
+  .kpis{flex-wrap:nowrap;overflow-x:auto;margin:14px -14px;padding:0 14px 4px;scrollbar-width:none}
+  .kpis::-webkit-scrollbar{display:none}
+  .kpi{flex:none;padding:8px 12px;min-width:auto}
+  .kpi b{font-size:15px}.ring{width:36px;height:36px;font-size:12px}.ring span{width:29px;height:29px}
+  .tags{flex-wrap:nowrap;overflow-x:auto;margin:0 -14px 12px;padding:0 14px;scrollbar-width:none}.tag{flex:none}
+  .gtk-btn{padding:10px 12px;gap:10px}.gtk-ico{width:38px;height:38px;font-size:20px}
+  .lead{font-size:15px}
+  .stage{border-radius:10px;margin:0 -14px;border-radius:0}
+  .thumbs{margin:0 -14px;padding:8px 14px 4px}.th{width:96px}
+  .desc{font-size:14.5px}
+  .facts.side{grid-template-columns:1fr 1fr;column-gap:14px;font-size:13px}
+  .links a{padding:9px 12px}
+  .gtk-panel{padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+}
+@media (max-width:360px){:root{--card:96px}}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55;display:none}
+.scrim.open{display:block}
+.mcov:empty{display:none}
+
+/* ---------- KI-Manager */
+#aiBtn{white-space:nowrap}
+.ai-dlg .sub[data-pv]{margin-top:12px}
+.keyrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+#aiBtn .pr{font-size:12px;color:var(--accent2);font-variant-numeric:tabular-nums}
+.ai-dlg{width:min(780px,100%)}
+.ai-dlg .tabs{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:3px;margin:4px 0 16px}
+.ai-dlg .tabs button{flex:1;background:none;border:0;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:14px}
+.ai-dlg .tabs button.on{background:var(--panel2);color:var(--text)}
+.ai-stats{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.ai-stats span{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:5px 10px;font-size:13px;color:var(--muted)}
+.ai-stats b{color:var(--text)}
+.fs{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0 0 12px;background:rgba(255,255,255,.015)}
+.fs>h6{margin:0 0 10px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.radios{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.rad{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:var(--panel);font-size:14px;line-height:1.3}
+.rad:has(input:checked){border-color:var(--accent);background:rgba(124,92,255,.12)}
+.rad input{margin:2px 0 0;accent-color:var(--accent)}
+.rad small{display:block;color:var(--dim);font-size:12px;margin-top:2px}
+.sub{margin-top:10px}
+.libs{display:flex;flex-wrap:wrap;gap:6px}
+.libs label{display:flex;gap:7px;align-items:center;padding:6px 10px;border:1px solid var(--line);border-radius:999px;cursor:pointer;font-size:13px;background:var(--panel)}
+.libs label:has(input:checked){border-color:var(--accent);background:rgba(124,92,255,.14)}
+.libs input{accent-color:var(--accent);margin:0}
+.libs i{font-style:normal;color:var(--dim);font-size:12px}
+.fld{display:grid;gap:6px;margin-bottom:12px}
+.fld>span{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+.fld input[type=text],.fld input[type=number],.fld input[type=search],.fld input[type=password],.fld select,.fld textarea{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px;outline:none}
+.fld textarea{font-family:inherit;color:var(--text);font-size:14px;line-height:1.5;min-height:140px;resize:vertical;font-size:13px;line-height:1.45}
+.fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--accent)}
+.fld small{color:var(--dim);font-size:12px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.inl{display:flex;gap:8px;align-items:center}.inl>input{flex:1}
+.chk{display:flex;gap:9px;align-items:flex-start;font-size:14px;cursor:pointer;margin:6px 0}
+.chk input{accent-color:var(--accent);margin:3px 0 0}
+.chk small{display:block;color:var(--dim);font-size:12px}
+.pick{max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:8px}
+.pick label{display:flex;gap:9px;align-items:center;padding:7px 10px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+.pick label:last-child{border-bottom:0}
+.pick label:hover{background:var(--panel)}
+.pick input{accent-color:var(--accent);margin:0}
+.pick .st{margin-left:auto;font-size:11.5px;color:var(--dim);white-space:nowrap}
+.pick .st.ok{color:var(--ok)}
+.selchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.selchips span{background:rgba(124,92,255,.16);border-radius:999px;padding:3px 6px 3px 10px;font-size:12.5px;display:flex;gap:4px;align-items:center}
+.selchips button{background:none;border:0;cursor:pointer;color:var(--muted);padding:0 4px}
+.ai-sum{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border-radius:12px;background:linear-gradient(90deg,rgba(124,92,255,.14),rgba(34,211,238,.08));border:1px solid rgba(124,92,255,.35)}
+.ai-sum b{font-size:18px}
+.ai-sum .muted{font-size:13px}
+.ai-prog{padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);margin-bottom:14px}
+.ai-prog .top{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.ai-prog .cur{color:var(--muted);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-prog details{margin-top:8px}.ai-prog summary{cursor:pointer;color:var(--dim);font-size:12.5px}
+.okmsg{color:var(--ok);font-size:13px}.errmsg{color:#f87171;font-size:13px}
+.tokrow{display:flex;gap:8px;align-items:center;margin-bottom:12px;font-size:13px;color:var(--muted)}
+.btn.danger{border-color:#7f1d1d;color:#fca5a5}
+.btn:disabled{opacity:.5;cursor:default}
+.gtk-tools{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.gtk-tools .btn{font-size:13px;padding:6px 10px}
+.ai-gen{display:inline-flex;align-items:center;gap:8px;margin:2px 0 14px;font-size:13px}
+.ai-dlg label.rad,.ai-dlg .libs label,.ai-dlg label.chk,.ai-dlg .pick label{display:flex;text-transform:none;letter-spacing:normal;color:var(--text);font-size:14px}
+.ai-dlg label.rad,.ai-dlg .libs label,.ai-dlg .pick label{margin:0}
+.ai-dlg label.chk{margin:8px 0}
+.ai-dlg label.fld{display:grid;text-transform:none;letter-spacing:normal;color:var(--text);font-size:14px;margin:0 0 12px}
+.ai-dlg .fld>span{font-size:11.5px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+@media (max-width:760px){
+  #aiBtn span.l{display:none}
+  .row2,.row3{grid-template-columns:1fr}
+  .ai-dlg{padding:18px 14px calc(18px + env(safe-area-inset-bottom))}
+  .radios{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hrow">
+    <button class="iconbtn" id="menuBtn" aria-label="Filter">☰</button>
+    <a class="brand" href="#"><span class="logo">__SITE_ICON__</span><span class="t">__SITE_TITLE__</span></a>
+    <div class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Spiel, Entwickler, Genre suchen …" autocomplete="off">
+      <kbd>/</kbd>
+    </div>
+    <div class="stats" id="stats"></div>
+    <button class="btn" id="aiBtn" hidden title="KI-Texte (Good to Know) erzeugen &amp; konfigurieren">✨ <span class="l">KI-Texte</span> <span class="pr" id="aiPr"></span></button>
+    <button class="btn" id="impBtn" hidden title="Neuen Playnite-Export importieren">⇪ <span>Import</span></button>
+  </div>
+</header>
+<div class="scrim" id="scrim"></div>
+<div class="wrap">
+  <aside id="side"></aside>
+  <div class="sheet-foot" id="sheetFoot"><button class="btn" id="fReset">Zurücksetzen</button><button class="btn primary" id="fDone">Anzeigen</button></div>
+  <main>
+    <div class="toolbar">
+      <div class="seg" id="quick">
+        <button data-q="all" class="on">Alle</button>
+        <button data-q="recent">Zuletzt gespielt</button>
+        <button data-q="most">Meistgespielt</button>
+        <button data-q="new">Neu hinzugefügt</button>
+        <button data-q="backlog">Backlog</button>
+      </div>
+      <span class="spacer"></span>
+      <button class="btn mfilter" id="mFilter">⚙ Filter<span class="fbadge" id="fBadge" hidden></span></button>
+      <span class="count" id="count"></span>
+      <select class="sel" id="sort" aria-label="Sortierung">
+        <option value="name">Name A–Z</option>
+        <option value="-name">Name Z–A</option>
+        <option value="-playtime">Spielzeit</option>
+        <option value="-last">Zuletzt gespielt</option>
+        <option value="-added">Hinzugefügt</option>
+        <option value="-release">Erscheinungsdatum</option>
+        <option value="-community">Community-Wertung</option>
+        <option value="-critic">Kritiker-Wertung</option>
+      </select>
+      <div class="seg" id="view">
+        <button data-v="grid" class="on" title="Raster">▦</button>
+        <button data-v="list" title="Liste">☰</button>
+      </div>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="grid" id="grid"></div>
+    <div class="foot">Export aus Playnite · <a href="index-classic.html">Klassische Ansicht</a></div>
+  </main>
+</div>
+<div class="ovl" id="ovl"><div class="dlg" id="dlg"></div></div>
+<div class="gtk-ovl" id="gtk"><div class="gtk-panel" role="dialog" aria-modal="true" id="gtkBody"></div></div>
+<div class="lb" id="lb" onclick="this.classList.remove('open')"><img alt=""></div>
+<button class="backtop" id="top" aria-label="Nach oben">↑</button>
+<div class="ovl" id="impOvl"><div class="imp">
+  <h2>Playnite-Export importieren</h2>
+  <p>Den exportierten Ordner (oder ein ZIP davon) hochladen. Fehlende Cover werden automatisch ergänzt, danach wird die Seite neu aufgebaut.</p>
+  <label for="impTok">Update-Token</label>
+  <input type="password" id="impTok" autocomplete="off" placeholder="Token aus dem Portainer-Stack">
+  <div class="drop" id="drop">ZIP-Datei hierher ziehen oder auswählen
+    <div class="row"><button class="btn primary" id="pickDir">Export-Ordner wählen</button><button class="btn" id="pickZip">ZIP wählen</button></div>
+    <input type="file" id="fDir" webkitdirectory directory multiple hidden><input type="file" id="fZip" accept=".zip,.tar,application/zip" hidden>
+  </div>
+  <div id="impRun" hidden><div class="bar"><i id="impBar"></i></div><div class="count" id="impMsg"></div><pre class="ilog" id="impLog"></pre></div>
+  <div class="ifoot"><button class="btn" id="impClose">Schließen</button><button class="btn primary" id="impReload" hidden>Seite neu laden</button></div>
+</div></div>
+<div class="ovl" id="aiOvl"><div class="imp ai-dlg">
+  <h2>✨ KI-Texte „Good to Know“</h2>
+  <p>Texte per Ollama neu erzeugen – für alle Spiele, einzelne Bibliotheken oder ausgewählte Spiele.</p>
+  <div class="ai-stats" id="aiStats"></div>
+  <div class="tabs" id="aiTabs"><button data-t="run" class="on">Erzeugen</button><button data-t="cfg">KI-Einstellungen</button></div>
+  <div class="ai-prog" id="aiProg" hidden>
+    <div class="top"><b id="aiPState"></b><span class="inl"><button class="btn danger" id="aiStop">Stopp</button></span></div>
+    <div class="bar"><i id="aiBar"></i></div>
+    <div class="cur" id="aiCur"></div>
+    <details><summary>Protokoll</summary><pre class="ilog" id="aiLog"></pre></details>
+  </div>
+  <div class="tokrow" id="aiTokRow"></div>
+  <section id="tabRun">
+    <div class="fs"><h6>Welche Spiele?</h6>
+      <div class="radios" id="aiScope">
+        <label class="rad"><input type="radio" name="sc" value="all" checked><span>Alle Spiele<small id="scAll"></small></span></label>
+        <label class="rad"><input type="radio" name="sc" value="libs"><span>Bibliotheken<small>Steam, Epic, GOG …</small></span></label>
+        <label class="rad"><input type="radio" name="sc" value="view"><span>Aktuelle Ansicht<small id="scView"></small></span></label>
+        <label class="rad"><input type="radio" name="sc" value="games"><span>Einzelne Spiele<small id="scGames">auswählen</small></span></label>
+      </div>
+      <div class="sub" id="subLibs" hidden><div class="libs" id="aiLibs"></div></div>
+      <div class="sub" id="subGames" hidden>
+        <input type="search" id="aiQ" placeholder="Spiel suchen …" autocomplete="off" style="width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px;outline:none">
+        <div class="pick" id="aiPick"></div><div class="selchips" id="aiSel"></div>
+      </div>
+    </div>
+    <div class="fs"><h6>Was erzeugen?</h6>
+      <div class="radios" id="aiMode">
+        <label class="rad"><input type="radio" name="md" value="missing" checked><span>Nur fehlende<small>bestehende Texte bleiben</small></span></label>
+        <label class="rad"><input type="radio" name="md" value="model"><span>Fehlende + anderes Modell<small>z. B. nach Modellwechsel</small></span></label>
+        <label class="rad"><input type="radio" name="md" value="all"><span>Alle neu<small>überschreibt vorhandene</small></span></label>
+      </div>
+      <label class="chk"><input type="checkbox" id="aiNoSteam"><span>Auch Spiele ohne Steam-Daten<small>Die KI nutzt ihr eigenes Wissen. Kennt sie ein Spiel nicht, wird es übersprungen.</small></span></label>
+      <div class="inl" style="margin-top:6px"><span class="muted" style="font-size:13px">Höchstens</span><input type="number" id="aiLimit" min="0" placeholder="alle" style="max-width:110px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 10px"><span class="muted" style="font-size:13px">Spiele in diesem Lauf</span></div>
+    </div>
+    <div class="ai-sum"><div><b id="aiCount">–</b> <span>Spiele werden bearbeitet</span><div class="muted" id="aiEta"></div></div><button class="btn primary" id="aiStart">✨ Erzeugen starten</button></div>
+    <div id="aiRunMsg" style="margin-top:8px"></div>
+  </section>
+  <section id="tabCfg" hidden>
+    <div class="fs"><h6>KI-Anbieter</h6>
+      <div class="radios" id="cProv">
+        <label class="rad"><input type="radio" name="pv" value="ollama"><span>Ollama<small>lokal · kostenlos</small></span></label>
+        <label class="rad"><input type="radio" name="pv" value="openai"><span>OpenAI<small>API · kostenpflichtig</small></span></label>
+        <label class="rad"><input type="radio" name="pv" value="anthropic"><span>Claude<small>Anthropic API · kostenpflichtig</small></span></label>
+      </div>
+      <div class="sub" data-pv="ollama">
+        <label class="fld"><span>Ollama-URL</span><input type="text" id="cUrl" placeholder="http://192.168.1.10:11434"><small>Adresse des Ollama-Servers (ohne /v1 oder /api).</small></label>
+      </div>
+      <div class="sub" data-pv="openai">
+        <label class="fld"><span>API-Key</span><input type="password" id="cOaKey" autocomplete="new-password" placeholder="sk-…"><small id="cOaKeyInfo"></small></label>
+        <label class="fld"><span>API-URL</span><input type="text" id="cOaUrl" placeholder="https://api.openai.com/v1"><small>Standard: https://api.openai.com/v1 – oder ein OpenAI-kompatibler Dienst (z. B. OpenRouter, LM Studio).</small></label>
+      </div>
+      <div class="sub" data-pv="anthropic">
+        <label class="fld"><span>API-Key</span><input type="password" id="cAnKey" autocomplete="new-password" placeholder="sk-ant-…"><small id="cAnKeyInfo"></small></label>
+      </div>
+      <label class="fld" style="margin-top:10px"><span>Modell</span><div class="inl"><input type="text" id="cModel" list="cModels" autocomplete="off"><button class="btn" id="cTest">Verbindung testen</button></div><datalist id="cModels"></datalist><small id="cTestMsg">„Verbindung testen“ lädt die verfügbaren Modelle.</small></label>
+      <small class="muted" id="cProvNote" style="display:block;font-size:12px"></small>
+    </div>
+    <div class="fs"><h6>Generierung</h6>
+      <div class="row3">
+        <label class="fld"><span>Kreativität <b id="cTempV"></b></span><input type="range" id="cTemp" min="0" max="1.5" step="0.05"><small>niedrig = sachlich, hoch = freier</small></label>
+        <label class="fld" id="cCtxF"><span>Kontext (Tokens)</span><select id="cCtx"><option>4096</option><option>8192</option><option>16384</option><option>32768</option></select></label>
+        <label class="fld"><span>Timeout pro Spiel (s)</span><input type="number" id="cTo" min="30" max="1800"></label>
+        <label class="fld"><span>Parallele Anfragen</span><select id="cPar"><option>1</option><option>2</option><option>3</option><option>4</option><option>6</option><option>8</option></select><small>Cloud: 3–4 empfohlen · Ollama: 1</small></label>
+      </div>
+      <label class="fld"><span>Stil &amp; Regeln (System-Prompt)</span><textarea id="cSys"></textarea><small><a href="#" id="cSysReset" style="color:var(--accent)">Standard wiederherstellen</a> · Aufbau (Pitch, Gameplay, Highlights, Hinweise, Für wen) bleibt fix.</small></label>
+    </div>
+    <div class="fs"><h6>Nach einem Playnite-Import</h6>
+      <label class="chk"><input type="checkbox" id="cAuto"><span>KI-Texte automatisch erzeugen<small>läuft im Hintergrund, nachdem die neue Seite aktiv ist</small></span></label>
+      <div class="row3">
+        <label class="fld"><span>Umfang</span><select id="cAScope"><option value="missing">Nur fehlende</option><option value="model">Fehlende + anderes Modell</option></select></label>
+        <label class="fld"><span>Max. Spiele (0 = alle)</span><input type="number" id="cALim" min="0"></label>
+        <label class="fld"><span>&nbsp;</span><label class="chk" style="margin:8px 0 0"><input type="checkbox" id="cANoSteam"><span>auch ohne Steam-Daten</span></label></label>
+      </div>
+    </div>
+    <div class="inl" style="justify-content:flex-end"><span id="cMsg"></span><button class="btn primary" id="cSave">Einstellungen speichern</button></div>
+  </section>
+  <div class="ifoot"><button class="btn" id="aiClose">Schließen</button></div>
+</div></div>
+
+<script>
+const LIBCOL={'Steam':'#1b9cff','Epic':'#d6d6d6','Amazon Games':'#ff9900','Origin':'#ff5a1f','EA app':'#ff4747','Ubisoft Connect':'#a78bfa','Battle.net':'#00aeff','Xbox':'#2fbf4b','GOG':'#a35bd8'};
+const STATUS={'Not Played':'Nicht gespielt','Played':'Gespielt','Playing':'Spielt gerade','Beaten':'Durchgespielt','Completed':'Abgeschlossen','Abandoned':'Abgebrochen','On Hold':'Pausiert','Plan to Play':'Geplant'};
+const FILTERS=[
+  {k:'library',t:'Bibliothek',get:g=>[g.library]},
+  {k:'status',t:'Status',get:g=>[STATUS[g.status]||g.status]},
+  {k:'genres',t:'Genre',get:g=>g.genres},
+  {k:'features',t:'Eigenschaften',get:g=>g.features},
+  {k:'source',t:'Quelle',get:g=>[g.source]},
+  {k:'developers',t:'Entwickler',get:g=>g.developers},
+  {k:'publishers',t:'Publisher',get:g=>g.publishers},
+  {k:'decade',t:'Erscheinungsjahr',get:g=>{const y=g.year||+(String(g.release).match(/^\d{4}/)||[0])[0];return y?[(Math.floor(y/10)*10)+'er']:[]}},
+  {k:'flags',t:'Sonstiges',get:g=>[g.installed&&'Installiert',g.playtime>0&&'Mit Spielzeit',g.cover?'Mit Cover':'Ohne Cover',g.favorite&&'Favorit'].filter(Boolean)},
+];
+let G=[],S={q:'',sort:'name',view:'grid',quick:'all',f:{}},list=[],cur=-1;
+const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9]+/g,' ').trim();
+const fmtH=s=>{if(!s)return '–';let h=Math.floor(s/3600),m=Math.round(s%3600/60);if(m===60){h++;m=0}return h?(h>=100?`${h.toLocaleString('de-DE')} h`:`${h} h ${m?m+' min':''}`.trim()):`${m} min`};
+const fmtD=d=>d&&/^\d{4}-\d\d-\d\d$/.test(d)?new Date(d).toLocaleDateString('de-AT',{day:'2-digit',month:'2-digit',year:'numeric'}):(d||'–');
+const hue=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return h};
+const initials=n=>n.replace(/[^\p{L}\p{N} ]/gu,'').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+function ph(g,full){const h=hue(g.name);return `<div class="ph" style="background:linear-gradient(150deg,hsl(${h} 45% 30%),hsl(${(h+50)%360} 50% 14%))"><i>${esc(initials(g.name))}</i>${full?esc(g.name):''}</div>`}
+function img(g){return g.cover?`<img loading="lazy" decoding="async" src="${esc(g.cover)}" alt="" onload="this.classList.add('ld')" onerror="this.outerHTML=this.dataset.ph" data-ph="${esc(ph(g))}">`:ph(g)}
+
+function readHash(){
+  const h=location.hash.slice(1);
+  if(h.startsWith('game/')){return h.slice(5)}
+  const p=new URLSearchParams(h);S.q=p.get('q')||'';S.sort=p.get('sort')||'name';S.quick=p.get('v')||'all';S.f={};
+  for(const F of FILTERS){const v=p.getAll(F.k);if(v.length)S.f[F.k]=new Set(v)}
+  return null;
+}
+function writeHash(){
+  const p=new URLSearchParams();if(S.q)p.set('q',S.q);if(S.sort!=='name')p.set('sort',S.sort);if(S.quick!=='all')p.set('v',S.quick);
+  for(const k in S.f)for(const v of S.f[k])p.append(k,v);
+  const s=p.toString();if(location.hash.startsWith('#game/'))return;history.replaceState(null,'',s?'#'+s:location.pathname);
+}
+
+function matches(g,skip){
+  for(const k in S.f){if(k===skip||!S.f[k].size)continue;const F=FILTERS.find(x=>x.k===k);const vals=F.get(g);if(![...S.f[k]].some(v=>vals.includes(v)))return false}
+  if(S.q){const words=norm(S.q).split(' ');const hay=g._s;if(!words.every(w=>hay.includes(w)))return false}
+  if(S.quick==='recent'&&!g.last)return false;
+  if(S.quick==='most'&&!g.playtime)return false;
+  if(S.quick==='backlog'&&g.status!=='Not Played')return false;
+  return true;
+}
+function apply(){
+  let sort=S.sort;
+  if(S.quick==='recent')sort='-last';else if(S.quick==='most')sort='-playtime';else if(S.quick==='new')sort='-added';
+  const desc=sort[0]==='-',key=sort.replace('-','');
+  list=G.filter(g=>matches(g));
+  list.sort((a,b)=>{let x=a[key],y=b[key];if(key==='name'){x=a._n;y=b._n}
+    const ex=x==null||x==='',ey=y==null||y==='';if(ex&&ey)return a._n<b._n?-1:1;if(ex)return 1;if(ey)return -1;
+    return (x<y?-1:x>y?1:(a._n<b._n?-1:1))*(desc?-1:1)});
+  if(S.quick==='new')list=list.slice(0,60);
+  renderGrid();renderSide();renderChips();writeHash();updDone();
+}
+function renderGrid(){
+  const el=$('#grid');el.className='grid'+(S.view==='list'?' list':'');
+  $('#count').textContent=`${list.length} ${list.length===1?'Spiel':'Spiele'}`;
+  if(!G.length){el.innerHTML=`<div class="empty"><b>Noch keine Spiele</b>Exportiere deine Bibliothek in Playnite als HTML und lade sie über den Button <b>⇪ Import</b> oben rechts hoch.</div>`;return}
+  if(!list.length){el.innerHTML=`<div class="empty"><b>Keine Treffer</b>Andere Suche oder Filter probieren.</div>`;return}
+  el.innerHTML=list.map((g,i)=>{const lc=LIBCOL[g.library]||'#888';
+    const sub=S.view==='list'?`<small>${esc(g.genres.slice(0,3).join(' · '))}</small>`:`<small>${g.playtime?'⏱ '+fmtH(g.playtime):''}</small>`;
+    return `<div class="card" tabindex="0" data-i="${i}" title="${esc(g.name)}"><div class="thumb">${img(g)}</div>
+      <div class="meta">${esc(g.name)}${sub}</div>
+      <div class="badges"><span class="badge" style="color:${lc}">${esc(g.library)}</span>${S.view==='list'?`<span class="badge">${g.playtime?fmtH(g.playtime):'–'}</span>`:''}${g.installed?'<span class="badge inst">Installiert</span>':''}</div></div>`}).join('');
+}
+function renderSide(){
+  const side=$('#side'),closed=new Set([...side.querySelectorAll('.fgroup.closed')].map(e=>e.dataset.k));
+  const first=!side.innerHTML;
+  side.innerHTML=FILTERS.map(F=>{
+    const cnt={};G.forEach(g=>{if(!matches(g,F.k))return;for(const v of F.get(g))cnt[v]=(cnt[v]||0)+1});
+    const sel=S.f[F.k]||new Set();for(const v of sel)cnt[v]=cnt[v]||0;
+    let ent=Object.entries(cnt).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0]));
+    if(F.k==='decade')ent.sort((a,b)=>b[0].localeCompare(a[0]));
+    if(!ent.length)return '';
+    const big=ent.length>8,exp=side.dataset['x'+F.k]==='1';
+    const shown=big&&!exp?ent.filter((e,i)=>i<8||sel.has(e[0])):ent;
+    const isClosed=first?['source','developers','publishers'].includes(F.k):closed.has(F.k);
+    return `<div class="fgroup${isClosed?' closed':''}" data-k="${F.k}"><h4>${F.t}<span>▾</span></h4><div class="opts">${shown.map(([v,n])=>
+      `<div class="opt${sel.has(v)?' on':''}" data-k="${F.k}" data-v="${esc(v)}">${F.k==='library'?`<span class="dot" style="background:${LIBCOL[v]||'#888'}"></span>`:'<span class="box"></span>'}<span>${esc(v)}</span><span class="n">${n}</span></div>`).join('')}
+      ${big?`<button class="more" data-x="${F.k}">${exp?'Weniger':'Alle '+ent.length+' anzeigen'}</button>`:''}</div></div>`}).join('');
+}
+function renderChips(){
+  const c=[];for(const k in S.f)for(const v of S.f[k])c.push(`<span class="chip">${esc(v)}<button data-k="${k}" data-v="${esc(v)}" aria-label="entfernen">×</button></span>`);
+  if(S.q)c.unshift(`<span class="chip">„${esc(S.q)}“<button data-q="1">×</button></span>`);
+  $('#chips').innerHTML=c.length?c.join('')+'<span class="chip clear" id="clr">Alle zurücksetzen</span>':'';
+}
+function toggle(k,v,only){S.f[k]=S.f[k]||new Set();if(only){S.f={};S.f[k]=new Set([v])}else if(S.f[k].has(v))S.f[k].delete(v);else S.f[k].add(v);if(!S.f[k].size)delete S.f[k];apply()}
+
+function ring(v,label,c){return v==null?'':`<div class="kpi score"><div class="ring" style="--v:${v};--c:${c}"><span>${v}</span></div><div><small>${label}</small></div></div>`}
+const clean=h=>String(h||'').replace(/<script[\s\S]*?<\/script>/gi,'').replace(/<iframe[\s\S]*?<\/iframe>/gi,'').replace(/ on\w+="[^"]*"/gi,'').replace(/ on\w+='[^']*'/gi,'').replace(/<img /gi,'<img loading="lazy" ');
+const DCACHE={};
+function loadDetails(g){if(!g.details)return Promise.resolve(null);if(DCACHE[g.id])return Promise.resolve(DCACHE[g.id]);
+  return fetch('details/'+g.id+'.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).then(d=>(DCACHE[g.id]=d)).catch(()=>null)}
+let CUR_AI=null;
+function openGtk(){if(!CUR_AI||!CUR_AI.ai)return;const {g,ai}=CUR_AI;
+  $('#gtkBody').innerHTML=`<div class="gtk-head"><div><small>Good to Know · Gamer-Check</small><h3>${esc(g.name)}</h3></div><button class="gtk-x" id="gtkX" aria-label="Schließen">✕</button></div>
+    <p class="ai-pitch">${esc(ai.pitch)}</p>
+    ${ai.gameplay?`<h6>🕹️ So spielt es sich</h6><p>${esc(ai.gameplay)}</p>`:''}
+    ${ai.highlights&&ai.highlights.length?`<h6>⭐ Highlights</h6><ul class="ai-list good">${ai.highlights.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+    ${ai.hinweise&&ai.hinweise.length?`<h6>⚠️ Gut zu wissen</h6><ul class="ai-list warn">${ai.hinweise.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:''}
+    ${ai.fuer_wen?`<div class="ai-for"><b>🎯 Für wen?</b> ${esc(ai.fuer_wen)}</div>`:''}
+    <p class="gtk-note">${ai.src==='wissen'?'Per KI aus deren eigenem Wissen erstellt (keine Shop-Daten vorhanden)':'Automatisch per KI aus den Shop-Infos zusammengefasst'} – kann Fehler enthalten.${ai.model?' · '+esc(ai.model):''}</p>
+    ${AI.api&&tokGet()?`<div class="gtk-tools"><button class="btn" id="gtkRegen">↻ Text neu erzeugen</button><span class="muted" id="gtkRegenMsg" style="font-size:13px"></span></div>`:''}`;
+  $('#gtk').classList.add('open');}
+function closeGtk(){$('#gtk').classList.remove('open')}
+const CTRL={full:'Volle Unterstützung',partial:'Teilweise'};
+function openGame(i){
+  cur=i;const g=list[i];if(!g)return;
+  $('#dlg').innerHTML=renderGame(g,null,true);
+  $('#ovl').classList.add('open');$('#ovl').scrollTop=0;document.body.style.overflow='hidden';
+  if(location.hash.startsWith('#game/'))history.replaceState({g:1,p:(history.state&&history.state.p)||0},'','#game/'+g.id);else history.pushState({g:1,p:1},'','#game/'+g.id);
+  if(!g.details){bindMedia({movies:[],screens:[]});loadOwnAi(g).then(a=>{if(a&&cur===i){$('#dlg').innerHTML=renderGame(g,null,false);bindMedia({movies:[],screens:[]})}})}
+  if(g.details)loadDetails(g).then(d=>{if(cur===i&&d){$('#dlg').innerHTML=renderGame(g,d,false);bindMedia(d)}});
+  // vorladen der Nachbarn
+  [list[i+1],list[i-1]].forEach(n=>n&&loadDetails(n));
+}
+function renderGame(g,d,loading){
+  const bg=(d&&d.background)||g.bg||(d&&d.screens[0]&&d.screens[0].f)||g.cover;
+  const dev=(d&&d.developers.length?d.developers:g.developers), pub=(d&&d.publishers.length?d.publishers:g.publishers);
+  const year=g.year||(/^\d{4}/.test(g.release)?g.release.slice(0,4):'');
+  const facts=[['Entwickler',dev.join(', ')],['Publisher',pub.join(', ')],['Erschienen',d&&d.release?d.release:fmtD(g.release)],
+    ['Bibliothek',g.library],['Quelle',g.source],['Plattform',g.platforms.join(', ')],['Hinzugefügt',fmtD(g.added)],['Zuletzt gespielt',fmtD(g.last)],
+    ['Controller',d&&CTRL[d.controller]],['Errungenschaften',d&&d.achievements?d.achievements:''],['Altersfreigabe',d&&+d.age?'ab '+d.age:'']].filter(f=>f[1]&&f[1]!=='–');
+  const chip=(k,arr)=>arr.map(v=>`<span class="tag" data-k="${k}" data-v="${esc(v)}">${esc(v)}</span>`).join('');
+  const about=d&&d.about?clean(d.about):clean(g.desc);
+  const ai=d&&d.ai&&d.ai.pitch?d.ai:(!g.details&&g._ai&&g._ai.pitch?g._ai:null); CUR_AI={g,ai};
+  const short=d&&d.short||'';
+  const mc=(d&&d.metacritic&&d.metacritic.score)||g.metacritic;
+  const mv=d&&d.movies.find(m=>m.mp4||m.webm||(m.hls&&document.createElement('video').canPlayType('application/vnd.apple.mpegurl')));
+  const media=d&&(mv||d.screens.length)?`<div class="media">
+      <div class="stage" id="stage">${mv?`<video controls playsinline preload="none" poster="${esc(mv.thumb)}" src="${esc(mv.mp4||mv.webm||mv.hls)}"></video>`:`<img src="${esc(d.screens[0].f)}" alt="">`}</div>
+      <div class="thumbs">${mv?`<button class="th on" data-v="1"><img src="${esc(mv.thumb)}" alt=""><span>▶</span></button>`:''}${d.screens.map((s,j)=>`<button class="th${!mv&&!j?' on':''}" data-f="${esc(s.f)}"><img loading="lazy" src="${esc(s.t)}" alt=""></button>`).join('')}</div></div>`:'';
+  const req=d&&(d.req_min||d.req_rec)?`<h5>Systemanforderungen</h5><div class="reqs">${d.req_min?`<div>${clean(d.req_min)}</div>`:''}${d.req_rec?`<div>${clean(d.req_rec)}</div>`:''}</div>`:'';
+  const links=[...(d?[{n:'Steam-Store',u:d.store}]:[]),...(d&&d.website?[{n:'Website',u:d.website}]:[]),...(d&&d.metacritic&&d.metacritic.url?[{n:'Metacritic',u:d.metacritic.url}]:[]),...g.links.filter(l=>!(d&&/store\.steampowered/.test(l.u)))];
+  return `<div class="hero" style="${bg?`background-image:url('${esc(bg)}')`:`background:linear-gradient(135deg,hsl(${hue(g.name)} 40% 25%),#0d0f14)`}">
+      <button class="dnav prev" data-d="-1" aria-label="Vorheriges">‹</button><button class="dnav next" data-d="1" aria-label="Nächstes">›</button><button class="dclose" aria-label="Schließen">✕</button></div>
+    <div class="dbody"><div class="dleft"><div class="dcover">${g.cover?`<img src="${esc(g.cover)}" alt="" onerror="this.outerHTML=this.dataset.ph" data-ph="${esc(ph(g,1))}">`:ph(g,1)}</div>
+      ${d?`<a class="btn primary wide" href="${esc(d.store)}" target="_blank" rel="noopener">Im Steam-Store öffnen</a>`:''}
+      <div class="facts side">${facts.map(f=>`<div><small>${f[0]}</small>${esc(f[1])}</div>`).join('')}</div></div>
+    <div class="dsec"><div class="dtop"><div class="mcov">${g.cover?`<img src="${esc(g.cover)}" alt="" onerror="this.remove()">`:''}</div><div class="dtt"><h1 class="dtitle">${esc(g.name)}</h1>
+      <div class="dsub">${esc([dev[0],year].filter(Boolean).join(' · '))}</div></div></div>
+      <div class="kpis"><div class="kpi"><small>Spielzeit</small><b>${fmtH(g.playtime)}</b></div><div class="kpi"><small>Status</small><b>${esc(STATUS[g.status]||g.status||'–')}</b></div>
+      ${ring(mc,'Metacritic','#fbbf24')}${ring(g.community,'Community','#22d3ee')}${ring(g.critic,'Kritiker','#a78bfa')}${ring(g.user,'Meine Wertung','#34d399')}
+      ${g.installed?'<div class="kpi"><small>Installation</small><b style="color:var(--ok)">Installiert</b></div>':''}</div>
+      ${g.genres.length||g.features.length?`<div class="tags">${chip('genres',g.genres)}${chip('features',g.features)}</div>`:''}
+      ${ai?`<button class="gtk-btn" id="gtkBtn" aria-haspopup="dialog"><span class="gtk-ico">🎮</span><span class="gtk-txt"><b>Good to Know</b><small>Gamer-Check: Gameplay, Highlights &amp; was du wissen solltest</small></span><span class="gtk-badge">KI</span><span class="gtk-arrow">›</span></button>`:aiAdminBtn(g,loading)}
+      ${short?`<p class="lead">${esc(short)}</p>`:''}
+      ${loading&&g.details?'<div class="skel"></div><div class="skel s2"></div>':''}
+      ${media}
+      ${about?`<h5>Über das Spiel</h5><div class="desc clamp" id="about">${about}</div><button class="more" id="aboutMore">Mehr anzeigen</button>`:(!g.details?'<p class="muted">Für dieses Spiel sind keine weiteren Infos verfügbar.</p>':'')}
+      ${d&&d.languages?`<h5>Sprachen</h5><div class="muted">${esc(d.languages)}${d.languages_note?`<br><small>${esc(d.languages_note)}</small>`:''}</div>`:''}
+      ${req}
+      ${links.length?`<h5>Links</h5><div class="links">${links.map(l=>`<a href="${esc(l.u)}" target="_blank" rel="noopener">${esc(l.n)}</a>`).join('')}</div>`:''}
+      <h5>Playnite</h5><div class="links"><a href="${g.id}.html">Klassische Detailseite</a></div>
+    </div></div>`;
+}
+function bindMedia(d){
+  const stage=$('#stage'),am=$('#aboutMore'),ab=$('#about');
+  if(am&&ab){if(ab.scrollHeight<=ab.clientHeight+10)am.remove();else am.onclick=()=>{ab.classList.toggle('clamp');am.textContent=ab.classList.contains('clamp')?'Mehr anzeigen':'Weniger anzeigen'}}
+  document.querySelectorAll('.thumbs .th').forEach(b=>b.onclick=()=>{
+    document.querySelectorAll('.thumbs .th').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+    const v=stage.querySelector('video');if(v)v.pause();
+    if(b.dataset.v){const mv=d.movies.find(m=>m.mp4||m.webm||m.hls);stage.innerHTML=`<video controls playsinline autoplay poster="${esc(mv.thumb)}" src="${esc(mv.mp4||mv.webm||mv.hls)}"></video>`}
+    else stage.innerHTML=`<img src="${esc(b.dataset.f)}" alt="" class="zoom">`;
+  });
+  if(stage)stage.addEventListener('click',e=>{const im=e.target.closest('img');if(im)openLb(im.src)});
+}
+function openLb(src){const lb=$('#lb');lb.querySelector('img').src=src;lb.classList.add('open')}
+function closeGame(fromPop){closeGtk();if(!fromPop&&history.state&&history.state.p){history.back();return}$('#ovl').classList.remove('open');document.body.style.overflow='';cur=-1;writeHash()}
+
+// events
+$('#q').addEventListener('input',e=>{S.q=e.target.value;clearTimeout(window._t);window._t=setTimeout(apply,120)});
+$('#sort').addEventListener('change',e=>{S.sort=e.target.value;if(S.quick!=='all'&&S.quick!=='backlog'){S.quick='all';syncSeg()}apply()});
+$('#quick').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.quick=b.dataset.q;syncSeg();apply()});
+$('#view').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.view=b.dataset.v;try{localStorage.setItem('eg-view',S.view)}catch(_){}syncSeg();renderGrid()});
+$('#side').addEventListener('click',e=>{
+  const o=e.target.closest('.opt');if(o)return toggle(o.dataset.k,o.dataset.v);
+  const m=e.target.closest('.more');if(m){const s=$('#side');s.dataset['x'+m.dataset.x]=s.dataset['x'+m.dataset.x]==='1'?'0':'1';return renderSide()}
+  const h=e.target.closest('h4');if(h)h.parentElement.classList.toggle('closed');
+});
+$('#chips').addEventListener('click',e=>{const b=e.target.closest('button');if(e.target.id==='clr'){S.f={};S.q='';$('#q').value='';return apply()}
+  if(!b)return;if(b.dataset.q){S.q='';$('#q').value=''}else{S.f[b.dataset.k].delete(b.dataset.v);if(!S.f[b.dataset.k].size)delete S.f[b.dataset.k]}apply()});
+$('#grid').addEventListener('click',e=>{const c=e.target.closest('.card');if(c)openGame(+c.dataset.i)});
+$('#grid').addEventListener('keydown',e=>{if(e.key==='Enter'){const c=e.target.closest('.card');if(c)openGame(+c.dataset.i)}});
+$('#ovl').addEventListener('click',e=>{
+  if(e.target.closest('#gtkBtn'))return openGtk();
+  if(e.target.closest('#aiOne')){const g=list[cur];if(g)aiOneGame(g,$('#aiOne'));return}
+  if(e.target.id==='ovl'||e.target.closest('.dclose'))return closeGame();
+  const n=e.target.closest('.dnav');if(n){const j=cur+ +n.dataset.d;if(j>=0&&j<list.length)openGame(j);return}
+  const t=e.target.closest('.tag');if(t){closeGame();toggle(t.dataset.k,t.dataset.v,true)}
+});
+document.addEventListener('keydown',e=>{
+  if($('#gtk').classList.contains('open')){if(e.key==='Escape')closeGtk();return}
+  if($('#lb').classList.contains('open')){if(e.key==='Escape')$('#lb').classList.remove('open');return}
+  if(imp.ovl.classList.contains('open')){if(e.key==='Escape')closeImp();return}
+  if($('#ovl').classList.contains('open')){if(e.key==='Escape')closeGame();if(e.key==='ArrowRight'&&cur<list.length-1)openGame(cur+1);if(e.key==='ArrowLeft'&&cur>0)openGame(cur-1);return}
+  if(e.key==='/'&&document.activeElement!==$('#q')){e.preventDefault();$('#q').focus()}
+  if(e.key==='Escape'&&document.activeElement===$('#q')){$('#q').value='';S.q='';apply()}
+});
+const side=$('#side'),scrim=$('#scrim');
+const openSide=()=>{side.classList.add('open');scrim.classList.add('open');$('#sheetFoot').classList.add('open');document.body.style.overflow='hidden';updDone()};
+const closeSide=()=>{side.classList.remove('open');scrim.classList.remove('open');$('#sheetFoot').classList.remove('open');if(!$('#ovl').classList.contains('open'))document.body.style.overflow=''};
+$('#menuBtn').onclick=openSide;$('#mFilter').onclick=openSide;scrim.onclick=closeSide;$('#fDone').onclick=()=>{closeSide();scrollTo({top:0})};
+$('#fReset').onclick=()=>{S.f={};apply()};
+function updDone(){const n=Object.values(S.f).reduce((a,x)=>a+x.size,0);$('#fDone').textContent=`${list.length} Spiele anzeigen`;const b=$('#fBadge');b.hidden=!n;b.textContent=n}
+window.addEventListener('popstate',()=>{if($('#ovl').classList.contains('open')&&!location.hash.startsWith('#game/'))closeGame(true);else if(location.hash.startsWith('#game/')){const id=location.hash.slice(6);const i=list.findIndex(g=>g.id===id);if(i>=0&&!$('#ovl').classList.contains('open'))openGame(i)}});
+// Swipe links/rechts in der Detailansicht
+(()=>{let x0=null,y0=null;const o=$('#ovl');o.addEventListener('touchstart',e=>{if(e.target.closest('.thumbs,video,.gtk-panel'))return;x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
+ o.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.8){const j=cur+(dx<0?1:-1);if(j>=0&&j<list.length)openGame(j)}},{passive:true})})();
+window.addEventListener('scroll',()=>$('#top').classList.toggle('show',scrollY>800),{passive:true});
+$('#top').onclick=()=>scrollTo({top:0,behavior:'smooth'});
+function syncSeg(){
+  document.querySelectorAll('#quick button').forEach(b=>b.classList.toggle('on',b.dataset.q===S.quick));
+  document.querySelectorAll('#view button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.view));
+  $('#sort').value=S.sort;
+}
+
+// ---------- import
+const imp={ovl:$('#impOvl'),busy:false};
+const tokGet=()=>{try{return localStorage.getItem('eg-token')||''}catch(_){return ''}};
+fetch('api/status',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d){$('#impBtn').hidden=false;$('#aiBtn').hidden=false;AI.api=true;if(d.ai)aiShow(d.ai);if(d.ai&&d.ai.state==='running')aiPoll();if(d.state==='running'){openImp();poll()}}}).catch(()=>{});
+function openImp(){$('#impTok').value=tokGet();imp.ovl.classList.add('open');document.body.style.overflow='hidden'}
+function closeImp(){if(imp.busy)return;imp.ovl.classList.remove('open');document.body.style.overflow=''}
+$('#impBtn').onclick=openImp;$('#impClose').onclick=closeImp;imp.ovl.addEventListener('click',e=>{if(e.target===imp.ovl)closeImp()});
+$('#impReload').onclick=()=>location.reload();
+$('#pickDir').onclick=()=>$('#fDir').click();$('#pickZip').onclick=()=>$('#fZip').click();
+$('#fDir').onchange=e=>{const f=[...e.target.files];if(f.length)upload(tarBlob(f),`${f.length} Dateien`);e.target.value=''};
+$('#fZip').onchange=e=>{const f=e.target.files[0];if(f)upload(f,f.name);e.target.value=''};
+const drop=$('#drop');
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('over')});
+drop.addEventListener('dragleave',()=>drop.classList.remove('over'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('over');const f=e.dataTransfer.files[0];if(f)upload(f,f.name)});
+function tarBlob(files){
+  const enc=new TextEncoder(),parts=[];
+  const put=(h,off,str,len)=>{const b=typeof str==='string'?enc.encode(str):str;h.set(b.subarray(0,len),off)};
+  const oct=(n,len)=>n.toString(8).padStart(len-1,'0')+'\0';
+  for(const f of files){
+    let name=f.webkitRelativePath||f.name,nb=enc.encode(name),prefix='';
+    if(nb.length>100){const i=name.lastIndexOf('/',name.length-1);let cut=name.indexOf('/');
+      for(let j=name.indexOf('/');j>=0;j=name.indexOf('/',j+1)){if(enc.encode(name.slice(j+1)).length<=100){cut=j;break}}
+      prefix=name.slice(0,cut);name=name.slice(cut+1)}
+    const h=new Uint8Array(512);
+    put(h,0,name,100);put(h,100,'0000644\0',8);put(h,108,'0000000\0',8);put(h,116,'0000000\0',8);
+    put(h,124,oct(f.size,12),12);put(h,136,oct(Math.floor((f.lastModified||Date.now())/1000),12),12);
+    put(h,148,'        ',8);h[156]=48;put(h,257,'ustar\0',6);put(h,263,'00',2);put(h,345,prefix,155);
+    let sum=0;for(const x of h)sum+=x;put(h,148,sum.toString(8).padStart(6,'0')+'\0 ',8);
+    parts.push(h,f);const pad=(512-f.size%512)%512;if(pad)parts.push(new Uint8Array(pad));
+  }
+  parts.push(new Uint8Array(1024));return new Blob(parts,{type:'application/x-tar'});
+}
+function setRun(msg,pct){$('#impRun').hidden=false;$('#impMsg').textContent=msg;if(pct!=null)$('#impBar').style.width=pct+'%'}
+function upload(blob,label){
+  const tok=$('#impTok').value.trim();if(!tok){$('#impTok').focus();return}
+  try{localStorage.setItem('eg-token',tok)}catch(_){}
+  imp.busy=true;$('#impClose').disabled=true;$('#drop').hidden=true;$('#impLog').textContent='';
+  const mb=(blob.size/1048576).toFixed(1);setRun(`Lade hoch: ${label} (${mb} MB) …`,0);
+  const x=new XMLHttpRequest();x.open('POST','api/import');x.setRequestHeader('X-Token',tok);
+  x.upload.onprogress=e=>{if(e.lengthComputable)setRun(`Lade hoch: ${label} – ${Math.round(e.loaded/e.total*100)} %`,e.loaded/e.total*50)};
+  x.onload=()=>{if(x.status===202){setRun('Verarbeite Export …',55);poll()}else{let m=x.status;try{m=JSON.parse(x.responseText).error}catch(_){}fail(m)}};
+  x.onerror=()=>fail('Netzwerkfehler beim Upload');x.send(blob);
+}
+function fail(m){imp.busy=false;$('#impClose').disabled=false;$('#drop').hidden=false;setRun('Fehler: '+m,0)}
+function poll(){
+  imp.busy=true;$('#impClose').disabled=true;$('#drop').hidden=true;
+  fetch('api/status',{cache:'no-store'}).then(r=>r.json()).then(d=>{
+    const el=$('#impLog');el.textContent=d.log.join('\n');el.scrollTop=el.scrollHeight;
+    if(d.state==='running'){setRun('Verarbeite Export …',Math.min(95,55+d.log.length*3));setTimeout(poll,1500)}
+    else if(d.state==='done'){imp.busy=false;$('#impClose').disabled=false;setRun(`Fertig – ${d.summary.games} Spiele, ${d.summary.covers_filled} Cover ergänzt`,100);$('#impReload').hidden=false}
+    else if(d.state==='error'){fail((d.log.at(-1)||'').replace(/^\S+ FEHLER: /,''))}
+  }).catch(()=>setTimeout(poll,3000));
+}
+
+// ---------- KI-Manager
+const AI={ovl:$('#aiOvl'),api:false,have:{},cfg:null,def:'',sel:new Set(),job:null,timer:null,waiters:[]};
+const aiHdr=()=>({'X-Token':tokGet(),'Content-Type':'application/json'});
+function aiApi(path,body){return fetch('api/ai/'+path,{method:body?'POST':'GET',headers:body?aiHdr():{},body:body?JSON.stringify(body):undefined,cache:'no-store'})
+  .then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||('HTTP '+r.status));return d})}
+const fmtMin=s=>s==null?'–':s<90?`${Math.max(1,Math.round(s))} s`:s<5400?`${Math.round(s/60)} min`:`${(s/3600).toFixed(1).replace('.',',')} h`;
+const hasTxt=id=>{const h=AI.have[id];return h&&!h.u};
+function loadOwnAi(g){if(g._ai!==undefined)return Promise.resolve(g._ai);
+  return fetch('ai/'+g.id+'.json',{cache:'no-cache'}).then(r=>r.ok?r.json():null).catch(()=>null).then(a=>(g._ai=a))}
+function aiAdminBtn(g,loading){if(!AI.api||!tokGet()||loading&&g.details)return '';
+  return `<button class="btn ai-gen" id="aiOne" title="Good-to-Know-Text für dieses Spiel per KI erzeugen">✨ KI-Text erzeugen${g.details?'':' <small class="muted">(ohne Shop-Daten)</small>'}</button>`}
+function aiOneGame(g,btn,msgEl){
+  const say=t=>{if(msgEl)msgEl.textContent=t;else if(btn)btn.innerHTML=t};
+  if(btn)btn.disabled=true;say('⏳ wird erzeugt …');
+  aiApi('run',{scope:'ids',ids:[g.id],mode:'all',nosteam:true,label:g.name}).then(()=>{
+    AI.waiters.push(job=>{
+      delete DCACHE[g.id];g._ai=undefined;
+      if(job.state!=='done'){say('✗ '+((job.log||[]).at(-1)||job.state).replace(/^\S+ /,''));if(btn)btn.disabled=false;return}
+      if(job.skipped){say('Die KI kennt dieses Spiel nicht – kein Text');if(btn)btn.disabled=false;return}
+      const gtkOpen=$('#gtk').classList.contains('open');
+      if(cur>=0&&list[cur]&&list[cur].id===g.id){openGame(cur);if(gtkOpen)setTimeout(()=>{if(CUR_AI&&CUR_AI.ai)openGtk()},400)}
+    });aiPoll();
+  }).catch(e=>{say('✗ '+e.message);if(btn)btn.disabled=false});
+}
+function aiShow(j){AI.job=j;
+  const run=j.state==='running',pr=$('#aiPr');
+  pr.textContent=run&&j.total?`${j.done}/${j.total}`:'';
+  const box=$('#aiProg');if(!box)return;
+  box.hidden=j.state==='idle';if(box.hidden)return;
+  const lbl={running:'⏳ Läuft',done:'✔ Fertig',stopped:'■ Gestoppt',error:'✗ Fehler'}[j.state]||j.state;
+  $('#aiPState').textContent=`${lbl} – ${j.done} / ${j.total}${j.opts&&j.opts.label?' · '+j.opts.label:''}`;
+  $('#aiBar').style.width=(j.total?j.done/j.total*100:run?2:100)+'%';
+  $('#aiCur').textContent=run?(j.current?`Aktuell: ${j.current}`:'Starte …')+(j.eta!=null?` · noch ca. ${fmtMin(j.eta)}`:'')+(j.rate?` · ~${j.rate<2?j.rate.toFixed(1).replace('.',','):Math.round(j.rate)} s/Spiel`:'')
+    :`${j.made} erzeugt · ${j.skipped} unbekannt · ${j.fails} Fehler`+(j.state==='error'?' – '+((j.log||[]).at(-1)||'').replace(/^\S+ FEHLER: /,''):'');
+  $('#aiStop').hidden=!run;
+  const el=$('#aiLog');el.textContent=(j.log||[]).join('\n');el.scrollTop=el.scrollHeight;
+  $('#aiStart').disabled=run;
+}
+function aiPoll(){clearTimeout(AI.timer);
+  fetch('api/status',{cache:'no-store'}).then(r=>r.json()).then(d=>{const j=d.ai;const was=AI.job&&AI.job.state;aiShow(j);
+    if(j.state==='running'){AI.timer=setTimeout(aiPoll,AI.ovl.classList.contains('open')?1500:4000);return}
+    if(was==='running'||AI.waiters.length){const w=AI.waiters.splice(0);w.forEach(f=>f(j));aiOverview()}
+  }).catch(()=>{AI.timer=setTimeout(aiPoll,5000)});
+}
+function aiOverview(){return aiApi('overview').then(d=>{AI.have=d.have||{};aiStats();aiCount();if(!$('#subGames').hidden)aiPick()}).catch(()=>{})}
+function aiStats(){
+  const st=G.filter(g=>g.details),own=G.filter(g=>!g.details);
+  const a=st.filter(g=>hasTxt(g.id)).length,b=own.filter(g=>hasTxt(g.id)).length,u=G.filter(g=>AI.have[g.id]&&AI.have[g.id].u).length;
+  $('#aiStats').innerHTML=`<span>Steam-Spiele mit Text: <b>${a}</b> / ${st.length}</span><span>Ohne Steam-Daten mit Text: <b>${b}</b> / ${own.length}</span>${u?`<span>Der KI unbekannt: <b>${u}</b></span>`:''}${AI.cfg?`<span>KI: <b>${esc(AI.cfg.provider_name)} · ${esc(AI.cfg.active_model)}</b></span>`:''}`;
+  $('#scAll').textContent=`${G.length} Spiele`;$('#scView').textContent=`${list.length} Spiele (Filter/Suche)`;
+}
+function aiTokRow(){const t=tokGet(),r=$('#aiTokRow');
+  r.innerHTML=t?`🔑 Update-Token gespeichert · <a href="#" id="aiTokChg" style="color:var(--accent)">ändern</a>`
+    :`<div class="fld" style="width:100%;margin:0"><span>Update-Token</span><div class="inl"><input type="password" id="aiTok" placeholder="Token aus dem Portainer-Stack" autocomplete="off"><button class="btn" id="aiTokSave">Übernehmen</button></div></div>`;
+}
+$('#aiTokRow').addEventListener('click',e=>{
+  if(e.target.id==='aiTokChg'){e.preventDefault();try{localStorage.removeItem('eg-token')}catch(_){}aiTokRow();$('#aiTok').focus()}
+  if(e.target.id==='aiTokSave'){const v=$('#aiTok').value.trim();if(!v)return;try{localStorage.setItem('eg-token',v)}catch(_){}aiTokRow();if(cur>=0)openGame(cur)}
+});
+const radio=n=>(document.querySelector(`input[name=${n}]:checked`)||{}).value;
+function aiScopeGames(){const sc=radio('sc');
+  if(sc==='libs'){const L=new Set([...document.querySelectorAll('#aiLibs input:checked')].map(x=>x.value));return G.filter(g=>L.has(g.library))}
+  if(sc==='view')return list.slice();
+  if(sc==='games')return G.filter(g=>AI.sel.has(g.id));
+  return G.slice();
+}
+function aiTodo(){const md=radio('md'),ns=$('#aiNoSteam').checked,m=AI.cfg&&AI.cfg.active_model;
+  let t=aiScopeGames().filter(g=>(g.details||ns)&&(md==='all'||(md==='missing'?!AI.have[g.id]:!AI.have[g.id]||AI.have[g.id].m!==m)));
+  const lim=+$('#aiLimit').value||0;return lim>0?t.slice(0,lim):t}
+function aiCount(){const t=aiTodo(),c=AI.cfg||{},rate=(AI.job&&AI.job.rate&&AI.job.state==='running'&&AI.job.rate)||((c.provider&&c.provider!=='ollama'?4:7)/(c.parallel||1));
+  $('#aiCount').textContent=t.length;
+  const own=t.filter(g=>!g.details).length;
+  $('#aiEta').textContent=t.length?`Dauer ca. ${fmtMin(t.length*rate)}${AI.cfg?' mit '+esc(AI.cfg.provider_name):''} (~${rate<2?rate.toFixed(1).replace('.',','):Math.round(rate)} s/Spiel)${own?` · davon ${own} ohne Steam-Daten`:''}`:'Nichts zu tun – Auswahl oder Modus ändern';
+  $('#aiStart').disabled=!t.length||(AI.job&&AI.job.state==='running');
+  $('#scGames').textContent=AI.sel.size?`${AI.sel.size} ausgewählt`:'auswählen';
+}
+function aiLibs(){const c={};G.forEach(g=>c[g.library]=(c[g.library]||0)+1);
+  $('#aiLibs').innerHTML=Object.entries(c).sort((a,b)=>b[1]-a[1]).map(([l,n])=>`<label><input type="checkbox" value="${esc(l)}"><span>${esc(l)}</span><i>${n}</i></label>`).join('')}
+function aiPick(){const q=norm($('#aiQ').value||'');
+  let r=q?G.filter(g=>g._n.includes(q)):[...G.filter(g=>AI.sel.has(g.id)),...list.filter(g=>!AI.sel.has(g.id))];
+  r=r.slice(0,60);
+  $('#aiPick').innerHTML=r.length?r.map(g=>{const h=AI.have[g.id];const st=h?(h.u?'<span class="st">KI unbekannt</span>':'<span class="st ok">✓ Text</span>'):`<span class="st">${g.details?'kein Text':'ohne Steam'}</span>`;
+    return `<label><input type="checkbox" value="${g.id}"${AI.sel.has(g.id)?' checked':''}><span>${esc(g.name)} <small class="muted">· ${esc(g.library)}</small></span>${st}</label>`}).join(''):'<div class="muted" style="padding:10px">Keine Treffer</div>';
+  const sel=G.filter(g=>AI.sel.has(g.id));
+  $('#aiSel').innerHTML=sel.slice(0,40).map(g=>`<span>${esc(g.name)}<button data-id="${g.id}" aria-label="entfernen">×</button></span>`).join('')+(sel.length>40?`<span>+${sel.length-40} weitere</span>`:'')+(sel.length?'<button class="more" id="aiSelClr">Auswahl leeren</button>':'');
+}
+$('#aiPick').addEventListener('change',e=>{const c=e.target;if(c.checked)AI.sel.add(c.value);else AI.sel.delete(c.value);aiPick();aiCount()});
+$('#aiSel').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.id==='aiSelClr')AI.sel.clear();else AI.sel.delete(b.dataset.id);aiPick();aiCount()});
+$('#aiQ').addEventListener('input',aiPick);
+$('#aiScope').addEventListener('change',()=>{const sc=radio('sc');$('#subLibs').hidden=sc!=='libs';$('#subGames').hidden=sc!=='games';if(sc==='games')aiPick();aiCount()});
+['#aiLibs','#aiMode','#aiNoSteam','#aiLimit'].forEach(s=>$(s).addEventListener(s==='#aiLimit'?'input':'change',aiCount));
+$('#aiTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('#aiTabs button').forEach(x=>x.classList.toggle('on',x===b));$('#tabRun').hidden=b.dataset.t!=='run';$('#tabCfg').hidden=b.dataset.t!=='cfg'});
+$('#aiStart').onclick=()=>{
+  if(!tokGet()){aiTokRow();const t=$('#aiTok');if(t)t.focus();$('#aiRunMsg').innerHTML='<span class="errmsg">Bitte zuerst das Update-Token eingeben.</span>';return}
+  const sc=radio('sc'),md=radio('md');
+  if(md==='all'){const n=aiTodo().filter(g=>hasTxt(g.id)).length;if(n&&!confirmInline(n))return}
+  const ids=sc==='all'?undefined:aiScopeGames().map(g=>g.id);
+  const label={all:'Alle Spiele',libs:'Bibliotheken: '+[...document.querySelectorAll('#aiLibs input:checked')].map(x=>x.value).join(', '),view:'Aktuelle Ansicht',games:`${AI.sel.size} ausgewählte Spiele`}[sc];
+  $('#aiRunMsg').textContent='';$('#aiStart').disabled=true;
+  aiApi('run',{scope:sc==='all'?'all':'ids',ids,mode:md,nosteam:$('#aiNoSteam').checked,limit:+$('#aiLimit').value||0,label})
+    .then(()=>{$('#aiProg').hidden=false;aiPoll()}).catch(e=>{$('#aiRunMsg').innerHTML=`<span class="errmsg">✗ ${esc(e.message)}</span>`;aiCount()});
+};
+let confirmArmed=0;
+function confirmInline(n){if(Date.now()-confirmArmed<8000){confirmArmed=0;return true}
+  confirmArmed=Date.now();$('#aiRunMsg').innerHTML=`<span class="errmsg">⚠ ${n} vorhandene Texte werden überschrieben – zum Bestätigen nochmal auf „Erzeugen starten“ tippen.</span>`;return false}
+$('#aiStop').onclick=()=>aiApi('stop',{}).then(()=>{$('#aiPState').textContent='Wird nach dem aktuellen Spiel gestoppt …'}).catch(e=>alertMsg(e));
+const alertMsg=e=>{$('#aiRunMsg').innerHTML=`<span class="errmsg">✗ ${esc(e.message||e)}</span>`};
+// Einstellungen
+const PVN={ollama:'Ollama',openai:'OpenAI',anthropic:'Claude'};
+const PVNOTE={ollama:'Läuft auf deinem PC – der muss während der Erzeugung eingeschaltet sein.',
+  openai:'Abrechnung über dein OpenAI-Konto. Richtwert für 1.000 Spiele: gpt-6-luna ca. 0,50 $, größere Modelle entsprechend mehr.',
+  anthropic:'Abrechnung über dein Anthropic-Konto. Richtwert für 1.000 Spiele: Haiku 4.5 ca. 4 $, Sonnet 5.5 ca. 7 $ – Sonnet kennt neuere Spiele besser.'};
+AI.models={ollama:'',openai:'',anthropic:''};
+const pvCur=()=>radio('pv')||'ollama';
+function pvShow(){const p=pvCur();document.querySelectorAll('#tabCfg .sub[data-pv]').forEach(x=>x.hidden=x.dataset.pv!==p);
+  $('#cModel').value=AI.models[p]||'';$('#cModels').innerHTML='';$('#cCtxF').hidden=p!=='ollama';$('#cProvNote').textContent=PVNOTE[p];
+  $('#cTestMsg').textContent='„Verbindung testen“ lädt die verfügbaren Modelle.'}
+function keyInfo(id,set,hint){$(id).innerHTML=set?`Gespeichert: <b>${esc(hint)}</b> · leer lassen = behalten · <a href="#" data-clear="${id==='#cOaKeyInfo'?'openai':'anthropic'}" style="color:#f87171">Key löschen</a>`:'Noch kein Key hinterlegt. Wird nur auf deinem Server gespeichert und nie an den Browser zurückgegeben.'}
+function cfgFill(c){AI.cfg=c;AI.models={ollama:c.model,openai:c.openai_model,anthropic:c.anthropic_model};
+  const r=document.querySelector(`input[name=pv][value=${c.provider}]`);if(r)r.checked=true;
+  $('#cUrl').value=c.url;$('#cOaUrl').value=c.openai_url;$('#cOaKey').value='';$('#cAnKey').value='';
+  keyInfo('#cOaKeyInfo',c.openai_key_set,c.openai_key_hint);keyInfo('#cAnKeyInfo',c.anthropic_key_set,c.anthropic_key_hint);
+  $('#cTemp').value=c.temperature;$('#cTempV').textContent=(+c.temperature).toFixed(2);
+  $('#cCtx').value=String(c.num_ctx);if($('#cCtx').value!==String(c.num_ctx))$('#cCtx').insertAdjacentHTML('beforeend',`<option selected>${c.num_ctx}</option>`);
+  $('#cPar').value=String(c.parallel||1);
+  $('#cTo').value=c.timeout;$('#cSys').value=c.system;$('#cAuto').checked=!!c.auto_import;$('#cAScope').value=c.import_scope||'missing';$('#cALim').value=c.import_limit||0;$('#cANoSteam').checked=!!c.nosteam;
+  pvShow()}
+$('#cProv').addEventListener('change',()=>{pvShow()});
+$('#cModel').addEventListener('input',()=>{AI.models[pvCur()]=$('#cModel').value.trim()});
+$('#tabCfg').addEventListener('click',e=>{const a=e.target.closest('[data-clear]');if(!a)return;e.preventDefault();
+  const k=a.dataset.clear;aiApi('config',{[k+'_key_clear']:true}).then(d=>{cfgFill(d.config);aiStats();$('#cMsg').innerHTML='<span class="okmsg">✓ Key gelöscht </span>'}).catch(er=>$('#cMsg').innerHTML=`<span class="errmsg">✗ ${esc(er.message)} </span>`)});
+$('#cTemp').oninput=()=>$('#cTempV').textContent=(+$('#cTemp').value).toFixed(2);
+$('#cSysReset').onclick=e=>{e.preventDefault();$('#cSys').value=AI.def};
+$('#cTest').onclick=()=>{const m=$('#cTestMsg');if(!tokGet()){m.innerHTML='<span class="errmsg">Zuerst das Update-Token eingeben (oben).</span>';return}
+  const p=pvCur();m.textContent='Verbinde …';aiApi('test',{provider:p,url:$('#cUrl').value,openai_url:$('#cOaUrl').value,openai_key:$('#cOaKey').value.trim(),anthropic_key:$('#cAnKey').value.trim()}).then(d=>{if(p==='ollama')$('#cUrl').value=d.url;if(p==='openai')$('#cOaUrl').value=d.openai_url;
+    $('#cModels').innerHTML=d.models.map(x=>`<option value="${esc(x)}">`).join('');
+    const cur=$('#cModel').value.trim(),ok=d.models.includes(cur);
+    m.innerHTML=`<span class="okmsg">✓ ${PVN[p]}${d.version?' '+esc(d.version):''} erreichbar · ${d.models.length} Modelle${d.models.length<=12?': '+d.models.map(esc).join(', '):' – Auswahl über das Modell-Feld'}</span>`+(cur&&!ok?`<br><span class="errmsg">Modell „${esc(cur)}“ ist dort nicht installiert.</span>`:'');
+  }).catch(e=>m.innerHTML=`<span class="errmsg">✗ ${esc(e.message)}</span>`)};
+$('#cSave').onclick=()=>{const m=$('#cMsg');if(!tokGet()){m.innerHTML='<span class="errmsg">Update-Token fehlt (oben) </span>';return}
+  const p=pvCur();AI.models[p]=$('#cModel').value.trim();
+  const body={provider:p,url:$('#cUrl').value,openai_url:$('#cOaUrl').value,model:AI.models.ollama,openai_model:AI.models.openai,anthropic_model:AI.models.anthropic,
+    temperature:+$('#cTemp').value,num_ctx:+$('#cCtx').value,timeout:+$('#cTo').value,parallel:+$('#cPar').value,
+    system:$('#cSys').value,auto_import:$('#cAuto').checked,import_scope:$('#cAScope').value,import_limit:+$('#cALim').value||0,nosteam:$('#cANoSteam').checked};
+  if($('#cOaKey').value.trim())body.openai_key=$('#cOaKey').value.trim();if($('#cAnKey').value.trim())body.anthropic_key=$('#cAnKey').value.trim();
+  if(p==='openai'&&!AI.cfg.openai_key_set&&!body.openai_key&&/api\.openai\.com/.test(body.openai_url)){m.innerHTML='<span class="errmsg">Bitte OpenAI-API-Key eingeben </span>';return}
+  if(p==='anthropic'&&!AI.cfg.anthropic_key_set&&!body.anthropic_key){m.innerHTML='<span class="errmsg">Bitte Claude-API-Key eingeben </span>';return}
+  aiApi('config',body)
+  .then(d=>{cfgFill(d.config);aiStats();aiCount();m.innerHTML='<span class="okmsg">✓ Gespeichert </span>';setTimeout(()=>m.textContent='',3000)})
+  .catch(e=>m.innerHTML=`<span class="errmsg">✗ ${esc(e.message)} </span>`)};
+function openAi(){aiTokRow();aiLibs();aiStats();aiCount();AI.ovl.classList.add('open');document.body.style.overflow='hidden';
+  aiApi('config').then(d=>{AI.def=d.default_system;cfgFill(d.config);aiStats();aiCount()}).catch(()=>{});
+  aiOverview();aiPoll()}
+function closeAi(){AI.ovl.classList.remove('open');if(!$('#ovl').classList.contains('open'))document.body.style.overflow=''}
+$('#aiBtn').onclick=openAi;$('#aiClose').onclick=closeAi;AI.ovl.addEventListener('click',e=>{if(e.target===AI.ovl)closeAi()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&AI.ovl.classList.contains('open')){e.stopImmediatePropagation();closeAi()}},true);
+
+$('#gtk').addEventListener('click',e=>{if(e.target.id==='gtk'||e.target.closest('#gtkX'))closeGtk();
+  if(e.target.closest('#gtkRegen')&&CUR_AI)aiOneGame(CUR_AI.g,e.target.closest('#gtkRegen'),$('#gtkRegenMsg'))});
+
+fetch('games.json',{cache:'no-cache'}).then(r=>r.json()).then(data=>{
+  G=data.map(g=>Object.assign(g,{_n:norm(g.name),_s:norm([g.name,g.library,g.source,...g.genres,...g.developers,...g.publishers,...g.features,...g.tags].join(' '))}));
+  const total=G.reduce((s,g)=>s+g.playtime,0),played=G.filter(g=>g.playtime>0).length;
+  $('#stats').innerHTML=`<span><b>${G.length}</b> Spiele</span><span><b>${played}</b> gespielt</span><span><b>${Math.round(total/3600).toLocaleString('de-DE')}</b> Stunden</span>`;
+  try{S.view=localStorage.getItem('eg-view')||'grid'}catch(_){}
+  const gid=readHash();$('#q').value=S.q;syncSeg();apply();
+  if(gid){const i=list.findIndex(g=>g.id===gid);if(i>=0)openGame(i)}
+}).catch(err=>{$('#grid').innerHTML=`<div class="empty"><b>games.json konnte nicht geladen werden</b>${esc(err)}</div>`});
+</script>
+</body>
+</html>
